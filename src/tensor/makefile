@@ -22,3 +22,6 @@ all : ${OBJECTS}
 
 clean :
 	rm -rf *.o
+
+cleandat :
+	rm -rf *.dat
