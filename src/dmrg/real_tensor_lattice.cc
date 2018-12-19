@@ -90,7 +90,7 @@ RealTensorLattice::~RealTensorLattice()
     delete[] right_block_;
     delete[] right_dim_;
 
-    for(int i=0;i<num_left_block_;++i) delete[] physics_index_[i]
+    for(int i=0;i<num_left_block_;++i) delete[] physics_index_[i];
     delete[] physics_index_;
 
     delete ket_tensor_;
@@ -155,13 +155,12 @@ int RealTensorLattice::ComputeLatticeDim(int leigh)
 
 int RealTensorLattice::ComputeKetTensorDim()
 {
-    int tensor_dim = 0;
-    if(ket_tensor_ != nullptr)
-    {
-        for(int i=0;i<ket_tensor_->num_block_;++i)
-            tensor_dim += ket_tensor_->matrix_block_[i]->total_element_num_;
-    }
-    return tensor_dim;
+    return ket_tensor_->ComputeMatrixBlockDim();
+}
+
+int RealTensorLattice::ComputePartKetTensorDim()
+{
+    return ket_tensor_->ComputePartMatrixBlockDim();
 }
 
 void RealTensorLattice::PrintTensorLattice()
@@ -241,7 +240,7 @@ void RealTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
     delete[] right_block_;
     delete[] right_dim_;
 
-    for(int i=0;i<num_left_block_;++i) delete[] physics_index_[i]
+    for(int i=0;i<num_left_block_;++i) delete[] physics_index_[i];
     delete[] physics_index_;
 
     delete ket_tensor_;
@@ -276,6 +275,81 @@ void RealTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
     }
     ket_tensor_->ReadMatrixBlock(tensor_lattice_file);
 }
+
+void RealTensorLattice::DefineTensorLattice(int num_left_block, int num_right_block, 
+     int* left_block, int* right_block, int* left_dim, int* right_dim)
+{
+    delete[] left_block_;
+    delete[] left_dim_;
+
+    delete[] right_block_;
+    delete[] right_dim_;
+
+    for(int i=0;i<num_left_block_;++i) delete[] physics_index_[i];
+    delete[] physics_index_;
+
+    num_left_block_ = num_left_block;
+    left_block_ = new int[num_left_block_];
+    left_dim_ = new int[num_left_block_];
+    for(int i=0;i<num_left_block_;++i)
+    {
+        left_block_[i] = left_block[i];
+        left_dim_[i] = left_dim[i];
+    }
+    
+    num_right_block_ = num_right_block;
+    right_block_ = new int[num_right_block_];
+    right_dim_ = new int[num_right_block_];
+    for(int i=0;i<num_right_block_;++i)
+    {
+        right_block_[i] = right_block[i];
+        right_dim_[i] = right_dim[i];
+    }
+
+    physics_index_ = new int* [num_left_block_];
+    for(int i=0;i<num_left_block_;++i)
+    {
+        physics_index_[i] = new int[num_right_block_];
+        for(int j=0;j<num_right_block_;++j)
+        {
+            physics_index_[i][j] = -1;
+        }
+    }
+}
+
+
+void RealTensorLattice::DefineTensorLattice(int num_block, int* left_index, int* right_index, 
+     int* physics_index, int row, int column)
+{
+    RealMatrix* tmp_matrix;
+    
+    // matrices are deleted?
+    delete ket_tensor_;
+
+    ket_tensor_ = new RealMatrixBlock(num_block, left_index, right_index);
+    tmp_matrix = new RealMatrix(row, column);
+    for(int i=0;i<num_block;++i)
+    {
+        physics_index_[left_index[i]][right_index[i]] = physics_index[i];
+        tmp_matrix->RandomMatrix();
+        ket_tensor_->set_matrix_block(i, tmp_matrix);
+    }
+    delete tmp_matrix;
+}
+
+void RealTensorLattice::CombineTensorLattice()
+
+
+void RealTensorLattice::ResetTensorLattice();
+{
+    ket_tensor_->ResetMatrixBlock();
+}
+
+void RealTensorLattice::NormalizeTensorLattice()
+{
+
+}
+
 
 
 

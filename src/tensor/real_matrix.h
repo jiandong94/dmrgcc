@@ -128,7 +128,7 @@ class RealMatrix
     // if flag = 0, expan the matrix to (row_+row, column_). 
     // i.e. piece the up-matrix and the down-matrix
     //
-    void CombineMatrix(int flag, RealMatrix* tmp_matrix);
+    void ExpanMatrix(int flag, RealMatrix* tmp_matrix);
 
     // svd
     void SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix, 

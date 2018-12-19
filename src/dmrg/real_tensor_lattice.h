@@ -90,6 +90,10 @@ class RealTensorLattice
 
     //
     //
+    int ComputePartKetTensorDim();
+
+    //
+    //
     void PrintTensorLattice();
 
     //
@@ -108,11 +112,71 @@ class RealTensorLattice
     //
     void ReadTensorLattice(ifstream &tensor_lattice_file);
 
+    //
+    //
+    void DefineTensorLattice(int num_left_block, int num_right_block, 
+         int* left_block, int* right_block, int* left_dim, int* right_dim);
+
+    //
+    //
+    void DefienTensorLattice(int num_block, int* left_index, int* right_index, 
+         int* physics_index, int row, int column);
 
 
+    // combine two tensor lattice
+    // if leigh=0, two tensor lattice must have the same
+    // num_right_block_ and right_block_, the new tensor
+    // lattice contains the left_block_ combined by the two, 
+    // if they have the same right block index, then add up
+    // the left dimension.
+    // eg: for leigh=0 
+    // original tensor lattice: num_left_block_ = 3
+    //                          left_block_ = [1,3,5]
+    //                          left_dim_ = [2,3,4]
+    // temp tensor lattice    : num_left_block_ = 4
+    //                          left_block_ = [1,3,4,6]
+    //                          left_dim_ = [1,3,4,6]
+    // new tensor lattice     : num_left_block = 5
+    //                          left_block_ = [1,3,4,5,6]
+    //                          left_dim_ = [3,6,4,4,6]
+    void CombineTensorLattice(int leigh, int &num_leigh_block, int* &leigh_block, 
+                              int* &leigh_dim, RealTensorLattice* tmp_tensor_lattice);
 
+    //
+    //
+    void ResetTensorLattice();
 
+    //
+    //
+    void NormalizeTensorLattice();
 
+    //
+    //
+    void VectorizeTensorLattice(bool direction, double* state);
+
+    //
+    //
+    void LeftCanonicalTensorLattice(int max_dim, double canonical_precision);
+
+    //
+    //
+    void LeftCanonicalTensorLattice(int* &singular_dim, int** &singular_value);
+
+    //
+    //
+    void RightCanonicalTensorLattice(int max_dim, double canonical_precision);
+
+    //
+    //
+    void RightCanonicalTensorLattice(int* &singular_dim, int** &singular_value);
+
+    //
+    //
+    void MixCanonicalTensorLattice(int max_dim, double canonical_precision);
+
+    //
+    //
+    void mixCanonicalTensorLattice(int* &singular_dim, int** &singular_value);
 
 
 

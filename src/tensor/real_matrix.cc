@@ -301,7 +301,7 @@ RealMatrix* RealMatrix::ReshapeMatrix(int row, int column)
     return tmp_matrix;
 }
 
-void RealMatrix::CombineMatrix(int flag, RealMatrix* tmp_matrix)
+void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
 {
     double* res_matrix_element;
     int res_row, res_column, res_total_element_num;

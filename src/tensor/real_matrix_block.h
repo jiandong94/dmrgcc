@@ -58,11 +58,15 @@ class RealMatrixBlock
 
     //
     //
-    void PrintMatrixBlock();
+    int ComputeMatrixBlockDim();
 
     //
     //
-    void WriteMatrixBlock(ofstream &matrix_block_file);
+    int ComputePartMatrixBlockDim(int position);
+
+    //
+    //
+    void PrintMatrixBlock();
 
     //
     //
@@ -70,11 +74,15 @@ class RealMatrixBlock
 
     //
     //
-    void ReadMatrixBlock(ifstream &matrix_block_flie);
+    void WriteMatrixBlock(ofstream &matrix_block_file);
 
     //
     //
     void ReadMatrixBlock(char* matrix_block_name);
+
+    //
+    //
+    void ReadMatrixBlock(ifstream &matrix_block_flie);
 
     //
     //

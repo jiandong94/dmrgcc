@@ -114,7 +114,7 @@ int main()
     matrix1->PrintMatrix();
     matrix2->PrintMatrix();
 
-    matrix1->CombineMatrix(1, matrix2);
+    matrix1->ExpanMatrix(1, matrix2);
     matrix1->PrintMatrix();
 
 

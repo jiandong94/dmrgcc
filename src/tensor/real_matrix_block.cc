@@ -140,6 +140,27 @@ void RealMatrixBlock::set_matrix_block(int position, RealMatrix* tmp_matrix)
     }
 }
 
+int RealMatrixBlock::ComputeMatrixBlockDim()
+{
+    int matrix_block_dim = 0;
+    if(matrix_block_ != nullptr)
+    {
+        for(int i=0;i<num_block_;++i)
+            matrix_block_dim += matrix_block_[i]->total_element_num_();
+    }
+    return matrix_block_dim;
+}
+
+int RealMatrixBlock::ComputePartMatrixBlockDim(int position)
+{
+    int part_matrix_block_dim = 0;
+    for(int i=0;i<position;++i)
+    {
+        part_matrix_block_dim += matrix_block_[i]->total_element_num_();
+    }
+    return part_matrix_block_dim;
+}
+
 
 void RealMatrixBlock::PrintMatrixBlock()
 {
