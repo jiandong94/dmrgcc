@@ -94,6 +94,10 @@ class RealMatrix
     // set matrix elements random
     //
     void RandomMatrix();
+
+    //
+    //
+    double SumSquareMatrix();
     
     // add a value to a matrix element
     //
@@ -115,6 +119,12 @@ class RealMatrix
     // element-wise product
     //
     void MatrixElementProduct(RealMatrix* tmp_matrix);
+
+    // change matrix
+    // if leigh = 0, change matrix dimension to (dimen, RightDImen)
+    //     if dimen >= LeftDimen, put the matrix elements in the new matrix,
+    //     else change the new matrix elements to zero.
+    void ChangeMatrix(int leight, int truncate_dim);
 
     //
     //

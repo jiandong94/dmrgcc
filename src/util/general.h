@@ -6,11 +6,13 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
+#include <math.h>
 
 #include "mkl.h"
 #include "sys/time.h"
 
 #define min(a,b) ((a)>(b)?(b):(a))
+#define max(a,b) ((a)<(b)?(b):(a))
 
 using std::ios;
 using std::cout;
@@ -36,6 +38,10 @@ using std::ifstream;
 //extern "C" void cblas_dgemm (CBLAS_LAYOUT Layout, CBLAS_TRANSPOSE transa, CBLAS_TRANSPOSE transb, 
 //                            MKL_INT m, MKL_INT n, MKL_INT k, double alpha, double *a, 
 //                             MKL_INT lda, double *b, MKL_INT ldb, double beta, double *c, MKL_INT ldc);
+
+// quick sort
+// return array and index
+void QuickSort(double* array, int* index, int left, int right);
 
 
 inline double GetWallTime()

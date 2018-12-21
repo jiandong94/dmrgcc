@@ -161,6 +161,37 @@ int RealMatrixBlock::ComputePartMatrixBlockDim(int position)
     return part_matrix_block_dim;
 }
 
+void RealMatrixBlock::NormalizeMatrixBlock()
+{
+    double result = 0.0;
+    for(int i=0;i<num_block_;++i) result += matrix_block_[i]->SumSquareMatrix();
+
+    result = sqrt(1.0/result);
+    for(int i=0;i<num_block_;++i) matrix_block_[i]->MultiplyToScalar(result);
+}
+
+void RealMatrixBlock::VectorizeMatrixBlock()
+{
+    double* matrix_element;
+    int total_element_num, part_matrix_block_dim;
+    for(int i=0;i<num_block_;++i)
+    {
+        matrix_element = matrix_block_[i]->matrix_element_;
+        total_element_num = matrix_block_[i]->total_element_num_;
+        part_matrix_block_dim = ComputePartMatrixBlockDim(i);
+        if(direction == true) //to state
+        {    
+            for(int j=0;j<total_element_num;++j)
+                state[part_matrix_block_dim+j] = matrix_element[j];
+        }
+        else if(direction == false) //to block
+        {
+            for(int j=0;j<total_element_num;++j)
+                matrix_element[j] = state[part_matrix_block_dim+j];
+        }
+    }
+    
+}
 
 void RealMatrixBlock::PrintMatrixBlock()
 {

@@ -60,9 +60,19 @@ class RealMatrixBlock
     //
     int ComputeMatrixBlockDim();
 
-    //
-    //
+    // compute the total dimension of matrices before position.
+    // position = 0, return 0
+    // position = 1, return dimension of the first matrix
+    // position = 2, return dimension of the first two matrices
     int ComputePartMatrixBlockDim(int position);
+
+    //
+    //
+    void NormalizeMatrixBlock();
+
+    //
+    // why not use double* &state
+    void VectorizeMatrixBlock(bool direction, double* &state);
 
     //
     //

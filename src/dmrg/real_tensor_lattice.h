@@ -10,19 +10,28 @@ class RealTensorLattice
     int physics_dim_;
 
     // left side
+    // num_left_block_ donates the number of the left
+    // QuantumNumber, the block number in left_block_ is different
+    // from each other and array left_dim_ stores dimensions for 
+    // each block number.
     int num_left_block_;
     int* left_block_;
     int* left_dim_;
 
     // right side
+    // similar to left side.
     int num_right_block_;
     int* right_block_;
     int* right_dim_;
 
     // physics index
+    // for every left block number and right block number ,there
+    // is a physics number stored in table physics_index_.
     int** physics_index_;
 
     // braket tensor
+    // ket_tensor_ is a series of matrices with all possible left block 
+    // number and right block number.
     RealMatrixBlock* ket_tensor_;
 
     // match dimension
@@ -152,8 +161,12 @@ class RealTensorLattice
 
     //
     //
-    void VectorizeTensorLattice(bool direction, double* state);
+    void VectorizeTensorLattice(bool direction, double* &state);
 
+    //
+    //
+    void ComputeTruncateDim(int max_dim, double canonical_precision, int num_singular_block, 
+         int* singular_dim, int **singular_value, int* truncate_dim);
     //
     //
     void LeftCanonicalTensorLattice(int max_dim, double canonical_precision);

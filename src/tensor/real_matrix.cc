@@ -200,8 +200,17 @@ void RealMatrix::RandomMatrix()
 
 }
 
-//
-//
+double RealMatrix::SumSquareMatrix()
+{
+    double result = 0.0;
+    for(int i=0;i<total_element_num_;++i)
+    {
+        result += matrix_element_[i]*matrix_element_[i];
+    }
+    return result;
+}
+
+
 void RealMatrix::AddToMatrixElement(int row, int column, double element)
 {
     matrix_element_[row*column_+column] += element;
@@ -272,6 +281,43 @@ void RealMatrix::MatrixElementProduct(RealMatrix* tmp_matrix)
     }
     for(int i=0;i<total_element_num_;++i) matrix_element_[i] *= tmp_matrix->matrix_element_[i];
 }
+
+void RealMatrix::ChangeMatrix(int leigh, int truncate_dim)
+{
+    int tmp_total_element_num;
+    double *tmp_matrix_element;
+    if(leigh==0 && row_!=truncate_dim)
+    {
+        tmp_total_element_num = column_*truncate_dim;
+        tmp_matrix_element = new double[tmp_total_element_num];
+        for(int i=0;i<tmp_total_element_num;++i) 
+            tmp_matrix_element[i] = 0.0;
+        if(total_element_num_ <= tmp_total_element_num)
+        {
+            for(int i=0;i<row_;++i) for(int j=0;j<column_;++j)
+                tmp_matrix_element[i*column_+j] = matrix_element_[i*column_+j];
+        }
+        row_ = truncate_dim;
+
+    }
+    else if(leigh==1 && column_!=truncate_dim)
+    {
+        tmp_total_element_num = row_*truncate_dim;
+        tmp_matrix_element = new double[tmp_total_element_num];
+        for(int i=0;i<tmp_total_element_num;++i) 
+            tmp_matrix_element[i] = 0.0;
+        if(total_element_num_ <= tmp_total_element_num)
+        {
+            for(int i=0;i<row_;++i) for(int j=0;j<column_;++j)
+                tmp_matrix_element[i*truncate_dim+j] = matrix_element_[i*column_+j];
+        }
+        column_ = truncate_dim;
+    }
+    delete[] matrix_element_;
+    total_element_num_ = tmp_total_element_num;
+    matrix_element_ = tmp_matrix_element;
+}
+
 
 RealMatrix* RealMatrix::TransposeMatrix()
 {
