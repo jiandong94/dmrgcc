@@ -4,6 +4,7 @@
 int main()
 {
     // constructor
+    //
     RealMatrix* matrix1 = new RealMatrix();
     delete matrix1;
 

@@ -52,8 +52,8 @@ RealTensorLattice::RealTensorLattice(RealTensorLattice* tmp_tensor_lattice)
     left_dim_ = new int[num_left_block_];
     for(int i=0;i<num_left_block_;++i)
     {
-        left_block_ = tmp_tensor_lattice->left_block_[i];
-        left_dim_ = tmp_tensor_lattice->left_dim_[i];
+        left_block_[i] = tmp_tensor_lattice->left_block_[i];
+        left_dim_[i] = tmp_tensor_lattice->left_dim_[i];
     }
 
     num_right_block_ = tmp_tensor_lattice->num_right_block_;
@@ -61,8 +61,8 @@ RealTensorLattice::RealTensorLattice(RealTensorLattice* tmp_tensor_lattice)
     right_dim_ = new int[num_right_block_];
     for(int i=0;i<num_right_block_;++i)
     {
-        right_block_ = tmp_tensor_lattice->right_block_[i];
-        right_dim_ = tmp_tensor_lattice->right_dim_[i];
+        right_block_[i] = tmp_tensor_lattice->right_block_[i];
+        right_dim_[i] = tmp_tensor_lattice->right_dim_[i];
     }
 
     physics_index_ = new int* [num_left_block_];
@@ -71,7 +71,7 @@ RealTensorLattice::RealTensorLattice(RealTensorLattice* tmp_tensor_lattice)
         physics_index_[i] = new int[num_right_block_];
         for(int j=0;j<num_right_block_;++j)
         {
-            phycics_index_[i][j] = tmp_tensor_lattice->physics_index_[i][j];
+            physics_index_[i][j] = tmp_tensor_lattice->physics_index_[i][j];
         }
     }
     
@@ -129,7 +129,7 @@ int* RealTensorLattice::get_right_block()
     return right_block_;
 }
 
-int* RealTensorLattice::get_right_dim_()
+int* RealTensorLattice::get_right_dim()
 {
     return right_dim_;
 }
@@ -158,9 +158,9 @@ int RealTensorLattice::ComputeKetTensorDim()
     return ket_tensor_->ComputeMatrixBlockDim();
 }
 
-int RealTensorLattice::ComputePartKetTensorDim()
+int RealTensorLattice::ComputePartKetTensorDim(int position)
 {
-    return ket_tensor_->ComputePartMatrixBlockDim();
+    return ket_tensor_->ComputePartMatrixBlockDim(position);
 }
 
 void RealTensorLattice::PrintTensorLattice()
@@ -200,7 +200,7 @@ void RealTensorLattice::WriteTensorLattice(char* tensor_lattice_name)
 
 void RealTensorLattice::WriteTensorLattice(ofstream &tensor_lattice_file)
 {
-    tensor_lattice_file.write((char*) &physice_dim_, sizeof(int));
+    tensor_lattice_file.write((char*) &physics_dim_, sizeof(int));
 
     tensor_lattice_file.write((char*) &num_left_block_, sizeof(int));
     for(int i=0;i<num_left_block_;++i)
@@ -248,11 +248,11 @@ void RealTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
     delete[] match_dim_;
     delete canonical_tensor_;
 
-    tensor_lattice_file.read((char*) &physice_dim_, sizeof(int));
+    tensor_lattice_file.read((char*) &physics_dim_, sizeof(int));
 
     tensor_lattice_file.read((char*) &num_left_block_, sizeof(int));
     left_block_ = new int[num_left_block_];
-    left_dim_ = new int[num_left_dim_];
+    left_dim_ = new int[num_left_block_];
     for(int i=0;i<num_left_block_;++i)
     {
         tensor_lattice_file.read((char*) &left_block_[i], sizeof(int));
@@ -260,7 +260,7 @@ void RealTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
     }
     tensor_lattice_file.read((char*) &num_right_block_, sizeof(int));
     right_block_ = new int[num_right_block_];
-    right_dim_ = new int[num_right_dim_];
+    right_dim_ = new int[num_right_block_];
     for(int i=0;i<num_right_block_;++i)
     {
         tensor_lattice_file.read((char*) &right_block_[i], sizeof(int));
@@ -271,7 +271,8 @@ void RealTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
     for(int i=0;i<num_left_block_;++i)
     {
         physics_index_[i] = new int[num_right_block_];
-        tensor_lattice_file.read((char*) &physics_index_[i][j], sizeof(int));
+        for(int j=0;j<num_right_block_;j++)
+            tensor_lattice_file.read((char*) &physics_index_[i][j], sizeof(int));
     }
     ket_tensor_->ReadMatrixBlock(tensor_lattice_file);
 }
@@ -318,7 +319,7 @@ void RealTensorLattice::DefineTensorLattice(int num_left_block, int num_right_bl
 }
 
 
-void RealTensorLattice::DefineTensorLattice(int num_block, int* left_index, int* right_index, 
+void RealTensorLattice::DefineTensorLattice(int num_block, int* left_index, int* right_index,
      int* physics_index, int row, int column)
 {
     RealMatrix* tmp_matrix;
@@ -337,10 +338,12 @@ void RealTensorLattice::DefineTensorLattice(int num_block, int* left_index, int*
     delete tmp_matrix;
 }
 
-void RealTensorLattice::CombineTensorLattice()
+//void RealTensorLattice::CombineTensorLattice()
+//{
+//
+//}
 
-
-void RealTensorLattice::ResetTensorLattice();
+void RealTensorLattice::ResetTensorLattice()
 {
     ket_tensor_->ResetMatrixBlock();
 }
@@ -356,7 +359,7 @@ void RealTensorLattice::VectorizeTensorLattice(bool direction, double* &state)
 }
 
 void RealTensorLattice::ComputeTruncateDim(int max_dim, double canonical_precision, 
-     int num_singular_block, int* singular_dim, int **singular_value, int* truncate_dim)
+     int num_singular_block, int* singular_dim, double** singular_value, int* truncate_dim)
 {
     int total_dim = 0;
     double* tmp_singular_value;
@@ -392,7 +395,7 @@ void RealTensorLattice::ComputeTruncateDim(int max_dim, double canonical_precisi
             }
         }
         QuickSort(tmp_singular_value, tmp_singular_block, 0, total_dim-1);
-        for(i=0;i<max_dim;++i) truncate_dim[tmp_singular_block[i]]++;
+        for(int i=0;i<max_dim;++i) truncate_dim[tmp_singular_block[i]]++;
         delete[] tmp_singular_value;
         delete[] tmp_singular_block;
     }
@@ -421,17 +424,17 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
 
     left_singular_tensor = new RealMatrix* [num_right_block_];
     right_singular_tensor = new RealMatrix* [num_right_block_];
-    sigular_value = new double* [num_right_block_];
+    singular_value = new double* [num_right_block_];
     singular_dim = new int[num_right_block_];
     truncate_dim = new int[num_right_block_];
     // do SVD decomposition for every right block number
     //
-    for(int r=0;i<num_right_block_;++i)
+    for(int r=0;r<num_right_block_;++r)
     {
         ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 1, r);
 
         block_dim[0] = 0;
-        block_dim[1] = right_dim[r];
+        block_dim[1] = right_dim_[r];
         for(int p=0;p<num_same_index;++p)
         {
             tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
@@ -440,8 +443,8 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
 
         if(block_dim[0] == 0)
         {
-            left_canonical_tensor[r] = nullptr;
-            right_canonical_tensor[r] = new RealMatrix(block_dim[1], block_dim[1]);
+            left_singular_tensor[r] = nullptr;
+            right_singular_tensor[r] = new RealMatrix(block_dim[1], block_dim[1]);
             singular_dim[r] = 1;
             // new double[0]?
             singular_value[r] = new double[block_dim[1]];
@@ -465,13 +468,12 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
                 add_up_left_dim += tmp_dim[0];
             }
             // svd
-            block_tensor->SVDMatrix(left_singular_tensor, right_singular_tensor, 
-                                    singular_value, singular_dim);
+            block_tensor->SVDMatrix(left_singular_tensor[r], right_singular_tensor[r], 
+                                    singular_value[r], singular_dim[r]);
             delete block_tensor;
         }
 
         delete[] position_same_index;
-
     }
     ComputeTruncateDim(max_dim, canonical_precision, num_right_block_, singular_dim, 
                        singular_value, truncate_dim);
@@ -479,30 +481,30 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
     // left_canonical_tensor => ket_tensor_
     // singular_value*right_canonical_tensor_ => canonical_tensor_
     // match_dim_ : right_dim_ for canonical_tensor_
-    delete[] match_dim;
+    delete[] match_dim_;
     delete canonical_tensor_;
     
-    match_dim = new int[num_right_dim_];
-    canonical_tensor_ = new RealMatrixBlock(num_right_dim_);
+    match_dim_ = new int[num_right_block_];
+    canonical_tensor_ = new RealMatrixBlock(num_right_block_);
 
-    for(int r=0;r<num_right_dim_;++r)
+    for(int r=0;r<num_right_block_;++r)
     {
-        if(left_canonical_tensor != nullptr)
+        if(left_singular_tensor != nullptr)
         {
             ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 1, r);
             add_up_left_dim = 0;
             for(int p=0;p<num_same_index;++p)
             {
                 // tmp_tensor is a pointer which points to a matrix from ket_tensor
-                tmp_tensor = ket_tensor->get_matrix_block(position_same_index[p]);
+                tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
                 tmp_tensor->ChangeMatrix(1, truncate_dim[r]);
                 
                 tmp_dim[0] = tmp_tensor->get_row();
-                tmp_dim[1] = tmp_tenspr->get_column();
+                tmp_dim[1] = tmp_tensor->get_column();
                 for(int i=0;i<tmp_dim[0];++i) for(int j=0;j<tmp_dim[1];++j)
                 {
-                    tmp_tenosr->set_matrix_element(i, j, 
-                    left_canonical_tensor[r]->get_matrix_element[add_up_left_dim+i, j]);
+                    tmp_tensor->set_matrix_element(i, j, 
+                    left_singular_tensor[r]->get_matrix_element(add_up_left_dim+i, j));
                     add_up_left_dim += tmp_dim[0];
                 }
             }
@@ -510,22 +512,22 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
         }
 
         right_dim_[r] = truncate_dim[r];
-        block_dim[1] = right_canonical_tensor->get_column();
+        block_dim[1] = right_singular_tensor[r]->get_column();
         match_dim_[r] = block_dim[1];
         block_tensor = new RealMatrix(truncate_dim[r], block_dim[1]);
         for(int i=0;i<truncate_dim[r];++i) for(int j=0;j<block_dim[1];++j)
             block_tensor->set_matrix_element(i, j, singular_value[r][i]*
-                    right_canonical_tensor[r]->get_matrix_element(i, j));
+                    right_singular_tensor[r]->get_matrix_element(i, j));
         
         canonical_tensor_->set_matrix_block(r, block_tensor);
 
-        delete left_canonical_tensor[r];
-        delete right_canonical_tensor[r];
+        delete left_singular_tensor[r];
+        delete right_singular_tensor[r];
         delete[] singular_value[r];
         delete block_tensor;
     }
-    delete[] left_canonical_tensor;
-    delete[] right_canonical_tensor;
+    delete[] left_singular_tensor;
+    delete[] right_singular_tensor;
     delete[] singular_value;
     delete[] singular_dim;
     delete[] truncate_dim;

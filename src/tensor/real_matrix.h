@@ -142,7 +142,7 @@ class RealMatrix
 
     // svd
     void SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix, 
-                   double* &sigular_value, int &sigular_dim);
+                   double* &singular_value, int &singular_dim);
 
 
 };

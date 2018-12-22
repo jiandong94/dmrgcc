@@ -393,7 +393,7 @@ void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
 // svd 
 // don't forget to delete left_matrix, right_matrix, sigular_value
 void RealMatrix::SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix, 
-                           double* &sigular_value, int &sigular_dim)
+                           double* &singular_value, int &singular_dim)
 {
     int matrix_layout = LAPACK_ROW_MAJOR;
     int info;
@@ -408,16 +408,16 @@ void RealMatrix::SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix,
     
     double superb[min(m,n)-1];
 
-    sigular_dim = row_;
-    if(row_ < column_) sigular_dim = column_;
+    singular_dim = row_;
+    if(row_ < column_) singular_dim = column_;
 
 
     left_matrix = new RealMatrix(m, m);
     right_matrix = new RealMatrix(n, n);
-    sigular_value = new double[sigular_dim];
+    singular_value = new double[singular_dim];
 
     info = LAPACKE_dgesvd(matrix_layout, jobu, jobvt, m, n, matrix_element_, 
-                          lda, sigular_value, left_matrix->matrix_element_, 
+                          lda, singular_value, left_matrix->matrix_element_, 
                           ldu, right_matrix->matrix_element_, ldvt, superb);
     if(info>0)
     {

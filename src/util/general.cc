@@ -1,4 +1,4 @@
-#include "util/genereal.h"
+#include "util/general.h"
 
 void QuickSort(double* array, int* index, int left, int right)
 {

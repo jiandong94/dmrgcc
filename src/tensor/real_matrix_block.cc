@@ -146,7 +146,7 @@ int RealMatrixBlock::ComputeMatrixBlockDim()
     if(matrix_block_ != nullptr)
     {
         for(int i=0;i<num_block_;++i)
-            matrix_block_dim += matrix_block_[i]->total_element_num_();
+            matrix_block_dim += matrix_block_[i]->get_total_element_num();
     }
     return matrix_block_dim;
 }
@@ -156,7 +156,7 @@ int RealMatrixBlock::ComputePartMatrixBlockDim(int position)
     int part_matrix_block_dim = 0;
     for(int i=0;i<position;++i)
     {
-        part_matrix_block_dim += matrix_block_[i]->total_element_num_();
+        part_matrix_block_dim += matrix_block_[i]->get_total_element_num();
     }
     return part_matrix_block_dim;
 }
@@ -170,14 +170,14 @@ void RealMatrixBlock::NormalizeMatrixBlock()
     for(int i=0;i<num_block_;++i) matrix_block_[i]->MultiplyToScalar(result);
 }
 
-void RealMatrixBlock::VectorizeMatrixBlock()
+void RealMatrixBlock::VectorizeMatrixBlock(bool direction, double* &state)
 {
     double* matrix_element;
     int total_element_num, part_matrix_block_dim;
     for(int i=0;i<num_block_;++i)
     {
-        matrix_element = matrix_block_[i]->matrix_element_;
-        total_element_num = matrix_block_[i]->total_element_num_;
+        matrix_element = matrix_block_[i]->get_matrix_element();
+        total_element_num = matrix_block_[i]->get_total_element_num();
         part_matrix_block_dim = ComputePartMatrixBlockDim(i);
         if(direction == true) //to state
         {    

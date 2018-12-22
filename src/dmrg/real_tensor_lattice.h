@@ -87,7 +87,7 @@ class RealTensorLattice
 
     // 
     //
-    int** get_physics_dim();
+    int** get_physics_index();
 
     //
     //
@@ -99,7 +99,7 @@ class RealTensorLattice
 
     //
     //
-    int ComputePartKetTensorDim();
+    int ComputePartKetTensorDim(int position);
 
     //
     //
@@ -128,7 +128,7 @@ class RealTensorLattice
 
     //
     //
-    void DefienTensorLattice(int num_block, int* left_index, int* right_index, 
+    void DefineTensorLattice(int num_block, int* left_index, int* right_index, 
          int* physics_index, int row, int column);
 
 
@@ -148,8 +148,9 @@ class RealTensorLattice
     // new tensor lattice     : num_left_block = 5
     //                          left_block_ = [1,3,4,5,6]
     //                          left_dim_ = [3,6,4,4,6]
-    void CombineTensorLattice(int leigh, int &num_leigh_block, int* &leigh_block, 
-                              int* &leigh_dim, RealTensorLattice* tmp_tensor_lattice);
+    //void CombineTensorLattice(int leigh, int &num_leigh_block, int* &leigh_block, 
+    //                          int* &leigh_dim, RealTensorLattice* tmp_tensor_lattice);
+    //
 
     //
     //
@@ -166,7 +167,7 @@ class RealTensorLattice
     //
     //
     void ComputeTruncateDim(int max_dim, double canonical_precision, int num_singular_block, 
-         int* singular_dim, int **singular_value, int* truncate_dim);
+         int* singular_dim, double** singular_value, int* truncate_dim);
     //
     //
     void LeftCanonicalTensorLattice(int max_dim, double canonical_precision);
