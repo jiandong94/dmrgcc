@@ -118,7 +118,10 @@ void RealMatrix::PrintMatrix()
             else cout << matrix_element_[i] << ", ";
         }
         cout << endl;
-
+    }
+    else
+    {
+        cout << "The matrix_element_ is nullptr!" << endl;
     }
 }
 
@@ -397,8 +400,8 @@ void RealMatrix::SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix,
 {
     int matrix_layout = LAPACK_ROW_MAJOR;
     int info;
-    char jobu = 'A';
-    char jobvt = 'A';
+    char jobu = 'S';
+    char jobvt = 'S';
     lapack_int m, n, lda, ldu, ldvt;
     m = row_;
     n = column_;
@@ -408,12 +411,10 @@ void RealMatrix::SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix,
     
     double superb[min(m,n)-1];
 
-    singular_dim = row_;
-    if(row_ < column_) singular_dim = column_;
+    singular_dim = min(row_, column_);
 
-
-    left_matrix = new RealMatrix(m, m);
-    right_matrix = new RealMatrix(n, n);
+    left_matrix = new RealMatrix(m, singular_dim);
+    right_matrix = new RealMatrix(singular_dim, n);
     singular_value = new double[singular_dim];
 
     info = LAPACKE_dgesvd(matrix_layout, jobu, jobvt, m, n, matrix_element_, 

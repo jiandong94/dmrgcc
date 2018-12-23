@@ -71,8 +71,8 @@ class RealMatrixBlock
     void NormalizeMatrixBlock();
 
     //
-    // why not use double* &state
-    void VectorizeMatrixBlock(bool direction, double* &state);
+    // why not use double* &stae
+    void VectorizeMatrixBlock(bool direction, double* state);
 
     //
     //

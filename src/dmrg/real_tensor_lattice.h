@@ -91,6 +91,10 @@ class RealTensorLattice
 
     //
     //
+    RealMatrixBlock* get_ket_tensor();
+
+    //
+    //
     int ComputeLatticeDim(int leigh);
 
     //
@@ -190,7 +194,7 @@ class RealTensorLattice
 
     //
     //
-    void mixCanonicalTensorLattice(int* &singular_dim, int** &singular_value);
+    void MixCanonicalTensorLattice(int* &singular_dim, int** &singular_value);
 
 
 

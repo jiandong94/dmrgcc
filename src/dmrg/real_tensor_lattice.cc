@@ -139,6 +139,11 @@ int** RealTensorLattice::get_physics_index()
     return physics_index_;
 }
 
+RealMatrixBlock* RealTensorLattice::get_ket_tensor()
+{
+    return ket_tensor_;
+}
+
 int RealTensorLattice::ComputeLatticeDim(int leigh)
 {
     int bond_dim = 0;
@@ -183,8 +188,11 @@ void RealTensorLattice::PrintTensorLattice()
     cout << "right dim  : ";
     for(int i=0;i<num_right_block_;++i) cout << right_dim_[i] << ", ";
     cout << endl;
-
-    ket_tensor_->PrintMatrixBlock();
+    cout << "ket tensor :" << endl;
+    if(ket_tensor_ == nullptr)
+        cout << "ket tensor is nullptr!" << endl;
+    else
+        ket_tensor_->PrintMatrixBlock();
 }
 
 void RealTensorLattice::WriteTensorLattice(char* tensor_lattice_name)
@@ -266,7 +274,6 @@ void RealTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
         tensor_lattice_file.read((char*) &right_block_[i], sizeof(int));
         tensor_lattice_file.read((char*) &right_dim_[i], sizeof(int));
     }
-
     physics_index_ = new int* [num_left_block_];
     for(int i=0;i<num_left_block_;++i)
     {
@@ -274,6 +281,7 @@ void RealTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
         for(int j=0;j<num_right_block_;j++)
             tensor_lattice_file.read((char*) &physics_index_[i][j], sizeof(int));
     }
+    ket_tensor_ = new RealMatrixBlock();
     ket_tensor_->ReadMatrixBlock(tensor_lattice_file);
 }
 
@@ -493,6 +501,9 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
         {
             ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 1, r);
             add_up_left_dim = 0;
+            cout << "ok1" << endl;
+            left_singular_tensor[r]->PrintMatrix();
+            right_singular_tensor[r]->PrintMatrix();
             for(int p=0;p<num_same_index;++p)
             {
                 // tmp_tensor is a pointer which points to a matrix from ket_tensor
@@ -508,6 +519,7 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
                     add_up_left_dim += tmp_dim[0];
                 }
             }
+            cout << "ok2" << endl;
             delete[] position_same_index;
         }
 

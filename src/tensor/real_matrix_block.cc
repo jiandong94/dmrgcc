@@ -170,7 +170,7 @@ void RealMatrixBlock::NormalizeMatrixBlock()
     for(int i=0;i<num_block_;++i) matrix_block_[i]->MultiplyToScalar(result);
 }
 
-void RealMatrixBlock::VectorizeMatrixBlock(bool direction, double* &state)
+void RealMatrixBlock::VectorizeMatrixBlock(bool direction, double* state)
 {
     double* matrix_element;
     int total_element_num, part_matrix_block_dim;
@@ -195,14 +195,21 @@ void RealMatrixBlock::VectorizeMatrixBlock(bool direction, double* &state)
 
 void RealMatrixBlock::PrintMatrixBlock()
 {
-    cout << "==============================" << endl;
-    cout << "Print MatrixBlock: " << endl;
-    cout << "Number of blocks: " << num_block_ << endl;
-    for(int i=0;i<num_block_;++i)
+    if(matrix_block_ == nullptr)
     {
-        cout << "Left index= " << left_index_[i] << ", " <<
-            "Right index= " << right_index_[i] << endl;
-        matrix_block_[i]->PrintMatrix();
+        cout << "matrix_block_ is nullptr!" << endl;
+    }
+    else
+    {
+        cout << "==============================" << endl;
+        cout << "Print MatrixBlock: " << endl;
+        cout << "Number of blocks: " << num_block_ << endl;
+        for(int i=0;i<num_block_;++i)
+        {
+            cout << "Left index= " << left_index_[i] << ", " <<
+                "Right index= " << right_index_[i] << endl;
+            matrix_block_[i]->PrintMatrix();
+        }
     }
 }
 
