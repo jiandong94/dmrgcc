@@ -85,7 +85,7 @@ int main()
 
     cout << endl;
     cout << "4. WriteMatrixBlock ReadMatrixBlock" << endl;
-    char* char_matrix_block = "matrix_block.dat";
+    char const *char_matrix_block = "matrix_block.dat";
     matrix_block->PrintMatrixBlock();
     cout << "Write matrix block ..." << endl;
     matrix_block->WriteMatrixBlock(char_matrix_block);

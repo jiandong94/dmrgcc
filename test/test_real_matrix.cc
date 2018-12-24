@@ -41,7 +41,7 @@ int main()
     cout << endl;
     cout << "3. WriteMatrix ReadMatrix" << endl;
     // write read
-    char* char_matrix = "matrix.dat";
+    char const *char_matrix = "matrix.dat";
     matrix->PrintMatrix();
     cout << "Write matrix ..." << endl;
     matrix->WriteMatrix(char_matrix);
@@ -105,6 +105,7 @@ int main()
     delete matrix_multiply;
     
     // test MKL 
+    /*
     cout << endl;
     cout << "6. Test MKL dgemm speed" << endl;
     cout << "Test MKL speed: random_matrix[3000,3000]*random[3000,3000]" << endl;
@@ -120,6 +121,7 @@ int main()
         delete matrix_test;
         delete matrix_multiply;
     }
+    */
     
 
 

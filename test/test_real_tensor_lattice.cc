@@ -25,8 +25,6 @@ int main()
         left_dim[i] = 2;
         right_dim[i] = 3;
     }
-    left_dim[1] = 4;
-    right_dim[1] = 6;
     tensor_lattice->DefineTensorLattice(num_left_block, num_right_block, 
             left_block, right_block, left_dim, right_dim);
     tensor_lattice->PrintTensorLattice();
@@ -78,7 +76,7 @@ int main()
 
     cout << endl;
     cout << "3. WriteTensorLattice ReadTensorLattice" << endl;
-    char* char_tensor_lattice = "tensor_lattice.dat";
+    char const *char_tensor_lattice = "tensor_lattice.dat";
     tensor_lattice->PrintTensorLattice();
     cout << "Write tensor lattice ..." << endl;
     tensor_lattice->WriteTensorLattice(char_tensor_lattice);
@@ -121,10 +119,39 @@ int main()
     delete[] state;
    
     cout << endl;
-    cout << "5. LeftCanonicalTensorLattice" << endl;
-    tensor_lattice->LeftCanonicalTensorLattice(-1, 0.0);
+    cout << "5. LeftCanonicalTensorLattice RightCanonicalTensorLattice" << endl;
+    cout << "#################################################################" << endl;
+    cout << "                    LeftCanonicalTensorLattice                   " << endl;
+    cout << "#################################################################" << endl;
+    cout << "--------------------------------------------" << endl;
+    cout << "Before Left Canonical:" << endl;
+    cout << "--------------------------------------------" << endl;
     tensor_lattice->PrintTensorLattice();
+    tensor_lattice->LeftCanonicalTensorLattice(-1, 0.0);
+    cout << "--------------------------------------------" << endl;
+    cout << "After Left Canonical: Ket Tensor" << endl;
+    cout << "--------------------------------------------" << endl;
+    tensor_lattice->PrintTensorLattice();
+    cout << "--------------------------------------------" << endl;
+    cout << "After Left Canonical: Canonical Tensor" << endl;
+    cout << "--------------------------------------------" << endl;
+    tensor_lattice->get_canonical_tensor()->PrintMatrixBlock();
 
-
+    cout << "#################################################################" << endl;
+    cout << "                    RightCanonicalTensorLattice                  " << endl;
+    cout << "#################################################################" << endl;
+    cout << "--------------------------------------------" << endl;
+    cout << "Before Right Canonical:" << endl;
+    cout << "--------------------------------------------" << endl;
+    tensor_lattice->PrintTensorLattice();
+    tensor_lattice->RightCanonicalTensorLattice(5, 0.0);
+    cout << "--------------------------------------------" << endl;
+    cout << "After Right Canonical: Ket Tensor" << endl;
+    cout << "--------------------------------------------" << endl;
+    tensor_lattice->PrintTensorLattice();
+    cout << "--------------------------------------------" << endl;
+    cout << "After Right Canonical: Canonical Tensor" << endl;
+    cout << "--------------------------------------------" << endl;
+    tensor_lattice->get_canonical_tensor()->PrintMatrixBlock();
     return 0;
 }   

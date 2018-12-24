@@ -213,7 +213,7 @@ void RealMatrixBlock::PrintMatrixBlock()
     }
 }
 
-void RealMatrixBlock::WriteMatrixBlock(char* matrix_block_name)
+void RealMatrixBlock::WriteMatrixBlock(const char* matrix_block_name)
 {
     ofstream matrix_block_file;
 
@@ -239,7 +239,7 @@ void RealMatrixBlock::WriteMatrixBlock(ofstream &matrix_block_file)
 }
 
 
-void RealMatrixBlock::ReadMatrixBlock(char* matrix_block_name)
+void RealMatrixBlock::ReadMatrixBlock(const char* matrix_block_name)
 {
     ifstream matrix_block_file;
 

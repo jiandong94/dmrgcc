@@ -144,6 +144,11 @@ RealMatrixBlock* RealTensorLattice::get_ket_tensor()
     return ket_tensor_;
 }
 
+RealMatrixBlock* RealTensorLattice::get_canonical_tensor()
+{
+    return canonical_tensor_;
+}
+
 int RealTensorLattice::ComputeLatticeDim(int leigh)
 {
     int bond_dim = 0;
@@ -195,7 +200,7 @@ void RealTensorLattice::PrintTensorLattice()
         ket_tensor_->PrintMatrixBlock();
 }
 
-void RealTensorLattice::WriteTensorLattice(char* tensor_lattice_name)
+void RealTensorLattice::WriteTensorLattice(const char* tensor_lattice_name)
 {
     ofstream tensor_lattice_file;
 
@@ -229,7 +234,7 @@ void RealTensorLattice::WriteTensorLattice(ofstream &tensor_lattice_file)
     ket_tensor_->WriteMatrixBlock(tensor_lattice_file);
 }
 
-void RealTensorLattice::ReadTensorLattice(char* tensor_lattice_name)
+void RealTensorLattice::ReadTensorLattice(const char* tensor_lattice_name)
 {
     ifstream tensor_lattice_file;
 
@@ -389,7 +394,7 @@ void RealTensorLattice::ComputeTruncateDim(int max_dim, double canonical_precisi
     // reorder singular values and throw away the smallest one until
     // total dimension is equal to max dimension
     int shift = 0;
-    if(total_dim>0 && max_dim<total_dim)
+    if(total_dim>0 && max_dim>0 && max_dim<total_dim)
     {
         tmp_singular_value = new double[total_dim];
         tmp_singular_block = new int[total_dim];
@@ -402,6 +407,7 @@ void RealTensorLattice::ComputeTruncateDim(int max_dim, double canonical_precisi
                 shift++;
             }
         }
+        for(int i=0;i<num_singular_block;++i) truncate_dim[i] = 0;
         QuickSort(tmp_singular_value, tmp_singular_block, 0, total_dim-1);
         for(int i=0;i<max_dim;++i) truncate_dim[tmp_singular_block[i]]++;
         delete[] tmp_singular_value;
@@ -440,13 +446,13 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
     for(int r=0;r<num_right_block_;++r)
     {
         ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 1, r);
-
         block_dim[0] = 0;
+        //block_dim[1] = ket_tensor_->get_matrix_block(position_same_index[0])->get_column();
         block_dim[1] = right_dim_[r];
         for(int p=0;p<num_same_index;++p)
         {
             tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
-            block_dim[0] += tmp_tensor->get_column();
+            block_dim[0] += tmp_tensor->get_row();
         }
 
         if(block_dim[0] == 0)
@@ -485,6 +491,7 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
     }
     ComputeTruncateDim(max_dim, canonical_precision, num_right_block_, singular_dim, 
                        singular_value, truncate_dim);
+    for(int r=0;r<3;++r) cout << "truncate_dim[r]: " << truncate_dim[r] << endl;
 
     // left_canonical_tensor => ket_tensor_
     // singular_value*right_canonical_tensor_ => canonical_tensor_
@@ -494,32 +501,28 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
     
     match_dim_ = new int[num_right_block_];
     canonical_tensor_ = new RealMatrixBlock(num_right_block_);
-
     for(int r=0;r<num_right_block_;++r)
     {
-        if(left_singular_tensor != nullptr)
+        if(left_singular_tensor[r] != nullptr)
         {
             ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 1, r);
             add_up_left_dim = 0;
-            cout << "ok1" << endl;
-            left_singular_tensor[r]->PrintMatrix();
-            right_singular_tensor[r]->PrintMatrix();
+
             for(int p=0;p<num_same_index;++p)
             {
                 // tmp_tensor is a pointer which points to a matrix from ket_tensor
                 tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
                 tmp_tensor->ChangeMatrix(1, truncate_dim[r]);
-                
+
                 tmp_dim[0] = tmp_tensor->get_row();
                 tmp_dim[1] = tmp_tensor->get_column();
                 for(int i=0;i<tmp_dim[0];++i) for(int j=0;j<tmp_dim[1];++j)
                 {
                     tmp_tensor->set_matrix_element(i, j, 
                     left_singular_tensor[r]->get_matrix_element(add_up_left_dim+i, j));
-                    add_up_left_dim += tmp_dim[0];
                 }
+                add_up_left_dim += tmp_dim[0];
             }
-            cout << "ok2" << endl;
             delete[] position_same_index;
         }
 
@@ -532,7 +535,7 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
                     right_singular_tensor[r]->get_matrix_element(i, j));
         
         canonical_tensor_->set_matrix_block(r, block_tensor);
-
+        
         delete left_singular_tensor[r];
         delete right_singular_tensor[r];
         delete[] singular_value[r];
@@ -545,11 +548,304 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
     delete[] truncate_dim;
 }
 
+void RealTensorLattice::LeftCanonicalTensorLattice(int* &singular_dim, double** &singular_value)
+{
+    RealMatrix **left_singular_tensor, **right_singular_tensor, *block_tensor,
+               *tmp_tensor;
+    int *truncate_dim, block_dim[2], tmp_dim[2], num_same_index, 
+        *position_same_index, add_up_left_dim;
+
+    left_singular_tensor = new RealMatrix* [num_right_block_];
+    right_singular_tensor = new RealMatrix* [num_right_block_];
+    singular_value = new double* [num_right_block_];
+    singular_dim = new int[num_right_block_];
+    truncate_dim = new int[num_right_block_];
+    // do SVD decomposition for every right block number
+    //
+    for(int r=0;r<num_right_block_;++r)
+    {
+        ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 1, r);
+        block_dim[0] = 0;
+        //block_dim[1] = ket_tensor_->get_matrix_block(position_same_index[0])->get_column();
+        block_dim[1] = right_dim_[r];
+        for(int p=0;p<num_same_index;++p)
+        {
+            tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
+            block_dim[0] += tmp_tensor->get_row();
+        }
+
+        if(block_dim[0] == 0)
+        {
+            left_singular_tensor[r] = nullptr;
+            right_singular_tensor[r] = new RealMatrix(block_dim[1], block_dim[1]);
+            singular_dim[r] = 1;
+            // new double[0]?
+            singular_value[r] = new double[block_dim[1]];
+            singular_value[r][0] = 0.0;
+        }
+        else
+        {
+            block_tensor = new RealMatrix(block_dim[0], block_dim[1]);
+            // put matrices with the same right block number into block_tenosr.
+            add_up_left_dim = 0;
+            for(int p=0;p<num_same_index;++p)
+            {
+                tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
+                tmp_dim[0] = tmp_tensor->get_row();
+                tmp_dim[1] = tmp_tensor->get_column();
+                for(int i=0;i<tmp_dim[0];++i) for(int j=0;j<tmp_dim[1];++j)
+                {
+                    block_tensor->set_matrix_element(add_up_left_dim+i, j, 
+                                  tmp_tensor->get_matrix_element(i, j));
+                }
+                add_up_left_dim += tmp_dim[0];
+            }
+            // svd
+            block_tensor->SVDMatrix(left_singular_tensor[r], right_singular_tensor[r], 
+                                    singular_value[r], singular_dim[r]);
+            delete block_tensor;
+        }
+
+        delete[] position_same_index;
+    }
+    ComputeTruncateDim(-1, 0.0, num_right_block_, singular_dim, 
+                       singular_value, truncate_dim);
+
+    // left_canonical_tensor => ket_tensor_
+    // singular_value*right_canonical_tensor_ => canonical_tensor_
+    // match_dim_ : right_dim_ for canonical_tensor_
+    delete[] match_dim_;
+    delete canonical_tensor_;
+    
+    match_dim_ = new int[num_right_block_];
+    canonical_tensor_ = new RealMatrixBlock(num_right_block_);
+    for(int r=0;r<num_right_block_;++r)
+    {
+        if(left_singular_tensor[r] != nullptr)
+        {
+            ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 1, r);
+            add_up_left_dim = 0;
+
+            for(int p=0;p<num_same_index;++p)
+            {
+                // tmp_tensor is a pointer which points to a matrix from ket_tensor
+                tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
+                tmp_tensor->ChangeMatrix(1, truncate_dim[r]);
+
+                tmp_dim[0] = tmp_tensor->get_row();
+                tmp_dim[1] = tmp_tensor->get_column();
+                for(int i=0;i<tmp_dim[0];++i) for(int j=0;j<tmp_dim[1];++j)
+                {
+                    tmp_tensor->set_matrix_element(i, j, 
+                    left_singular_tensor[r]->get_matrix_element(add_up_left_dim+i, j));
+                }
+                add_up_left_dim += tmp_dim[0];
+            }
+            delete[] position_same_index;
+        }
+
+        right_dim_[r] = truncate_dim[r];
+        block_dim[1] = right_singular_tensor[r]->get_column();
+        match_dim_[r] = block_dim[1];
+        block_tensor = new RealMatrix(truncate_dim[r], block_dim[1]);
+        for(int i=0;i<truncate_dim[r];++i) for(int j=0;j<block_dim[1];++j)
+            block_tensor->set_matrix_element(i, j, singular_value[r][i]*
+                    right_singular_tensor[r]->get_matrix_element(i, j));
+        
+        canonical_tensor_->set_matrix_block(r, block_tensor);
+        
+        delete left_singular_tensor[r];
+        delete right_singular_tensor[r];
+        delete block_tensor;
+    }
+    delete[] left_singular_tensor;
+    delete[] right_singular_tensor;
+    delete[] truncate_dim;
+}
 
 
+void RealTensorLattice::RightCanonicalTensorLattice(int max_dim, double canonical_precision)
+{
+    RealMatrix **left_singular_tensor, **right_singular_tensor, *block_tensor,
+               *tmp_tensor;
+    double **singular_value;
+    int *singular_dim, *truncate_dim, block_dim[2], tmp_dim[2], num_same_index, 
+        *position_same_index, add_up_right_dim;
+
+    left_singular_tensor = new RealMatrix* [num_left_block_];
+    right_singular_tensor = new RealMatrix* [num_left_block_];
+    singular_value = new double* [num_left_block_];
+    singular_dim = new int[num_left_block_];
+    truncate_dim = new int[num_left_block_];
+    // do SVD decomposition for every left block number
+    //
+    for(int l=0;l<num_left_block_;++l)
+    {
+        ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 0, l);
+        block_dim[0] = left_dim_[l];
+        block_dim[1] = 0;
+        for(int p=0;p<num_same_index;++p)
+        {
+            tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
+            block_dim[1] += tmp_tensor->get_column();
+        }
+
+        if(block_dim[1] == 0)
+        {
+            left_singular_tensor[l] = new RealMatrix(block_dim[0], block_dim[0]);
+            right_singular_tensor[l] = nullptr;
+            singular_dim[l] = 1;
+            // new double[0]?
+            singular_value[l] = new double[block_dim[0]];
+            singular_value[l][0] = 0.0;
+        }
+        else
+        {
+            block_tensor = new RealMatrix(block_dim[0], block_dim[1]);
+            // put matrices with the same left block number into block_tenosr.
+            add_up_right_dim = 0;
+            for(int p=0;p<num_same_index;++p)
+            {
+                tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
+                tmp_dim[0] = tmp_tensor->get_row();
+                tmp_dim[1] = tmp_tensor->get_column();
+                for(int i=0;i<tmp_dim[0];++i) for(int j=0;j<tmp_dim[1];++j)
+                {
+                    block_tensor->set_matrix_element(i, add_up_right_dim+j, 
+                                  tmp_tensor->get_matrix_element(i, j));
+                }
+                add_up_right_dim += tmp_dim[1];
+            }
+            // svd
+            block_tensor->SVDMatrix(left_singular_tensor[l], right_singular_tensor[l], 
+                                    singular_value[l], singular_dim[l]);
+            delete block_tensor;
+        }
+
+        delete[] position_same_index;
+    }
+    ComputeTruncateDim(max_dim, canonical_precision, num_right_block_, singular_dim, 
+                       singular_value, truncate_dim);
+    // right_canonical_tensor => ket_tensor_
+    // left_canonical_tensor_*singular_value => canonical_tensor_
+    // match_dim_ : left_dim_ for canonical_tensor_
+    delete[] match_dim_;
+    delete canonical_tensor_;
+    
+    match_dim_ = new int[num_left_block_];
+    canonical_tensor_ = new RealMatrixBlock(num_left_block_);
+    for(int l=0;l<num_left_block_;++l)
+    {
+        if(right_singular_tensor[l] != nullptr)
+        {
+            ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 0, l);
+            add_up_right_dim = 0;
+
+            for(int p=0;p<num_same_index;++p)
+            {
+                // tmp_tensor is a pointer which points to a matrix from ket_tensor
+                tmp_tensor = ket_tensor_->get_matrix_block(position_same_index[p]);
+                tmp_tensor->ChangeMatrix(0, truncate_dim[l]);
+
+                tmp_dim[0] = tmp_tensor->get_row();
+                tmp_dim[1] = tmp_tensor->get_column();
+                for(int i=0;i<tmp_dim[0];++i) for(int j=0;j<tmp_dim[1];++j)
+                {
+                    tmp_tensor->set_matrix_element(i, j, 
+                    right_singular_tensor[l]->get_matrix_element(i, add_up_right_dim+j));
+                }
+                add_up_right_dim += tmp_dim[1];
+            }
+            delete[] position_same_index;
+        }
+
+        left_dim_[l] = truncate_dim[l];
+        block_dim[0] = left_singular_tensor[l]->get_row();
+        match_dim_[l] = block_dim[0];
+        block_tensor = new RealMatrix(block_dim[0], truncate_dim[l]);
+        for(int i=0;i<block_dim[0];++i) for(int j=0;j<truncate_dim[l];++j)
+            block_tensor->set_matrix_element(i, j, left_singular_tensor[l]->get_matrix_element(i, j)
+                    *singular_value[l][j]);
+        
+        canonical_tensor_->set_matrix_block(l, block_tensor);
+        
+        delete left_singular_tensor[l];
+        delete right_singular_tensor[l];
+        delete[] singular_value[l];
+        delete block_tensor;
+    }
+    delete[] left_singular_tensor;
+    delete[] right_singular_tensor;
+    delete[] singular_value;
+    delete[] singular_dim;
+    delete[] truncate_dim;
+}
 
 
+void RealTensorLattice::LeftMergeTensorLattice(RealTensorLattice* tmp_tensor_lattice)
+{
+    RealMatrix *merge_tensor, *tmp_tensor[2];
+    int num_same_index, *position_same_index;
 
+    if(tmp_tensor_lattice->get_canonical_tensor() == nullptr)
+    {
+        cout << "Canonical tensor is nullptr in LeftMergeTensorLattice!";
+        exit(-1);
+    }
+    for(int l=0;l<num_left_block_;++l)
+    {
+        ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 0, l);
+        // direct get protected members(why can't)
+        tmp_tensor[0] = tmp_tensor_lattice->canonical_tensor_->get_matrix_block(l);
+        for(int p=0;p<num_same_index;++p)
+        {
+            tmp_tensor[1] = ket_tensor_->get_matrix_block(position_same_index[p]);
+            merge_tensor = tmp_tensor[0]->MultiplyToMatrix(tmp_tensor[1]);
+            tmp_tensor[1]->ReplaceMatrix(merge_tensor);
+            delete merge_tensor;
+        }
+        left_dim_[l] =tmp_tensor[0]->get_row();
+        delete[] position_same_index;
+    }
+    NormalizeTensorLattice();
+    delete[] tmp_tensor_lattice->match_dim_;
+    delete tmp_tensor_lattice->canonical_tensor_;
+    tmp_tensor_lattice->match_dim_ = nullptr;
+    tmp_tensor_lattice->canonical_tensor_ = nullptr;
+}
+
+
+void RealTensorLattice::RightMergeTensorLattice(RealTensorLattice* tmp_tensor_lattice)
+{
+    RealMatrix *merge_tensor, *tmp_tensor[2];
+    int num_same_index, *position_same_index;
+
+    if(tmp_tensor_lattice->get_canonical_tensor() == nullptr)
+    {
+        cout << "Canonical tensor is nullptr in RightMergeTensorLattice!";
+        exit(-1);
+    }
+    for(int r=0;r<num_right_block_;++r)
+    {
+        ket_tensor_->FindMatrixBlock(num_same_index, position_same_index, 1, r);
+        // direct get protected members
+        tmp_tensor[1] = tmp_tensor_lattice->canonical_tensor_->get_matrix_block(r);
+        for(int p=0;p<num_same_index;++p)
+        {
+            tmp_tensor[0] = ket_tensor_->get_matrix_block(position_same_index[p]);
+            merge_tensor = tmp_tensor[0]->MultiplyToMatrix(tmp_tensor[1]);
+            tmp_tensor[0]->ReplaceMatrix(merge_tensor);
+            delete merge_tensor;
+        }
+        right_dim_[r] =tmp_tensor[1]->get_column();
+        delete[] position_same_index;
+    }
+    NormalizeTensorLattice();
+    delete[] tmp_tensor_lattice->match_dim_;
+    delete tmp_tensor_lattice->canonical_tensor_;
+    tmp_tensor_lattice->match_dim_ = nullptr;
+    tmp_tensor_lattice->canonical_tensor_ = nullptr;
+}
 
 
 

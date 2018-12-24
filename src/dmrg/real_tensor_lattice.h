@@ -95,6 +95,10 @@ class RealTensorLattice
 
     //
     //
+    RealMatrixBlock* get_canonical_tensor();
+
+    //
+    //
     int ComputeLatticeDim(int leigh);
 
     //
@@ -111,7 +115,7 @@ class RealTensorLattice
 
     //
     //
-    void WriteTensorLattice(char* tensor_lattice_name);
+    void WriteTensorLattice(const char* tensor_lattice_name);
 
     //
     //
@@ -119,7 +123,7 @@ class RealTensorLattice
 
     //
     //
-    void ReadTensorLattice(char* tensor_lattice_name);
+    void ReadTensorLattice(const char* tensor_lattice_name);
 
     //
     //
@@ -178,24 +182,22 @@ class RealTensorLattice
 
     //
     //
-    void LeftCanonicalTensorLattice(int* &singular_dim, int** &singular_value);
+    void LeftCanonicalTensorLattice(int* &singular_dim, double** &singular_value);
 
     //
     //
     void RightCanonicalTensorLattice(int max_dim, double canonical_precision);
 
-    //
-    //
-    void RightCanonicalTensorLattice(int* &singular_dim, int** &singular_value);
 
-    //
-    //
-    void MixCanonicalTensorLattice(int max_dim, double canonical_precision);
-
-    //
-    //
     void MixCanonicalTensorLattice(int* &singular_dim, int** &singular_value);
 
+    //
+    //
+    void LeftMergeTensorLattice(RealTensorLattice* tmp_tensor_lattice);
+
+    //
+    //
+    void RightMergeTensorLattice(RealTensorLattice* tmp_tensor_lattice);
 
 
 

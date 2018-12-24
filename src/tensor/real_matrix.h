@@ -67,7 +67,7 @@ class RealMatrix
 
     // write
     //
-    void WriteMatrix(char* matrix_name);
+    void WriteMatrix(const char* matrix_name);
 
     // write
     //
@@ -75,7 +75,7 @@ class RealMatrix
 
     // read
     //
-    void ReadMatrix(char* matrix_name);
+    void ReadMatrix(const char* matrix_name);
 
     // read
     //
@@ -133,6 +133,10 @@ class RealMatrix
     // reshape matrix to (row, column)
     //
     RealMatrix* ReshapeMatrix(int row, int column);
+
+    // replace matrix(copy matrix)
+    //
+    void ReplaceMatrix(RealMatrix* tmp_matrix);
 
     // expan matrix
     // if flag = 0, expan the matrix to (row_+row, column_). 

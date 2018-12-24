@@ -125,7 +125,7 @@ void RealMatrix::PrintMatrix()
     }
 }
 
-void RealMatrix::WriteMatrix(char* matrix_name)
+void RealMatrix::WriteMatrix(const char* matrix_name)
 {
     ofstream matrix_file;
 
@@ -149,7 +149,7 @@ void RealMatrix::WriteMatrix(ofstream &matrix_file)
     }
 }
 
-void RealMatrix::ReadMatrix(char* matrix_name)
+void RealMatrix::ReadMatrix(const char* matrix_name)
 {
     ifstream matrix_file;
 
@@ -301,6 +301,9 @@ void RealMatrix::ChangeMatrix(int leigh, int truncate_dim)
                 tmp_matrix_element[i*column_+j] = matrix_element_[i*column_+j];
         }
         row_ = truncate_dim;
+        delete[] matrix_element_;
+        total_element_num_ = tmp_total_element_num;
+        matrix_element_ = tmp_matrix_element;
 
     }
     else if(leigh==1 && column_!=truncate_dim)
@@ -315,10 +318,11 @@ void RealMatrix::ChangeMatrix(int leigh, int truncate_dim)
                 tmp_matrix_element[i*truncate_dim+j] = matrix_element_[i*column_+j];
         }
         column_ = truncate_dim;
+        delete[] matrix_element_;
+        total_element_num_ = tmp_total_element_num;
+        matrix_element_ = tmp_matrix_element;
     }
-    delete[] matrix_element_;
-    total_element_num_ = tmp_total_element_num;
-    matrix_element_ = tmp_matrix_element;
+    
 }
 
 
@@ -332,6 +336,7 @@ RealMatrix* RealMatrix::TransposeMatrix()
     }
     return tmp_matrix;
 }
+
 
 RealMatrix* RealMatrix::ReshapeMatrix(int row, int column)
 {
@@ -348,6 +353,21 @@ RealMatrix* RealMatrix::ReshapeMatrix(int row, int column)
             tmp_matrix->matrix_element_[i] = matrix_element_[i];
     }
     return tmp_matrix;
+}
+
+void RealMatrix::ReplaceMatrix(RealMatrix* tmp_matrix)
+{
+    delete[] matrix_element_;
+    row_ = tmp_matrix->row_;
+    column_ = tmp_matrix->column_;
+    total_element_num_ = tmp_matrix->total_element_num_;
+    
+    if(total_element_num_ > 0)
+    {
+        matrix_element_ = new double[total_element_num_];
+        for(int i=0;i<total_element_num_;++i) matrix_element_[i] = tmp_matrix->matrix_element_[i];
+    }
+    else matrix_element_ = nullptr;
 }
 
 void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
@@ -406,15 +426,17 @@ void RealMatrix::SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix,
     m = row_;
     n = column_;
     lda = n;
-    ldu = m;
+    ldu = min(m, n);
     ldvt = n;
     
     double superb[min(m,n)-1];
 
     singular_dim = min(row_, column_);
 
-    left_matrix = new RealMatrix(m, singular_dim);
-    right_matrix = new RealMatrix(singular_dim, n);
+    left_matrix = new RealMatrix(m, ldu);
+    right_matrix = new RealMatrix(ldvt, n);
+    //left_matrix = new RealMatrix(m, m);
+    //right_matrix = new RealMatrix(n, n);
     singular_value = new double[singular_dim];
 
     info = LAPACKE_dgesvd(matrix_layout, jobu, jobvt, m, n, matrix_element_, 

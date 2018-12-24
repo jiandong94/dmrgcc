@@ -80,7 +80,7 @@ class RealMatrixBlock
 
     //
     //
-    void WriteMatrixBlock(char* matrix_block_name);
+    void WriteMatrixBlock(const char* matrix_block_name);
 
     //
     //
@@ -88,7 +88,7 @@ class RealMatrixBlock
 
     //
     //
-    void ReadMatrixBlock(char* matrix_block_name);
+    void ReadMatrixBlock(const char* matrix_block_name);
 
     //
     //
