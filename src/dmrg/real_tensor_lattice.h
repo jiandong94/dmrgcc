@@ -156,9 +156,9 @@ class RealTensorLattice
     // new tensor lattice     : num_left_block = 5
     //                          left_block_ = [1,3,4,5,6]
     //                          left_dim_ = [3,6,4,4,6]
-    //void CombineTensorLattice(int leigh, int &num_leigh_block, int* &leigh_block, 
-    //                          int* &leigh_dim, RealTensorLattice* tmp_tensor_lattice);
-    //
+    void CombineTensorLattice(int leigh, int &num_leigh_block, int* &leigh_block, 
+                              int* &leigh_dim, RealTensorLattice* expan_tensor_lattice);
+    
 
     //
     //

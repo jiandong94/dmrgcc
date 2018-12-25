@@ -176,7 +176,6 @@ int RealTensorLattice::ComputePartKetTensorDim(int position)
 void RealTensorLattice::PrintTensorLattice()
 {
     cout << "******************************" << endl;
-    cout << "Print Tensor Lattice" << endl;
     cout << "number of left  block = " << num_left_block_ << ",";
     cout << "number of right block = " << num_right_block_ << endl;
 
@@ -351,10 +350,109 @@ void RealTensorLattice::DefineTensorLattice(int num_block, int* left_index, int*
     delete tmp_matrix;
 }
 
-//void RealTensorLattice::CombineTensorLattice()
-//{
-//
-//}
+void RealTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block, int* &leigh_block, 
+     int* &leigh_dim, RealTensorLattice* expan_tensor_lattice)
+{
+    int tmp_num_leigh_block[2], *tmp_leigh_block[2], *tmp_leigh_dim[2];
+    bool flag;
+    if(leigh == 0)
+    {
+        if(num_right_block_ != expan_tensor_lattice->num_right_block_)
+        {
+            cout << "num_right_dim_ is not equal to expan_tensor_lattice in CombineTensorLattice!" << endl;
+            exit(-1);
+        }
+        for(int r=0;r<num_right_block_;++r)
+        {
+            if(right_block_[r] != expan_tensor_lattice->right_block_[r])
+            {
+                cout << "right_block_ is not equal to expan_tensor_lattice in CimbineTensorLattice!" << endl;
+                exit(-1);
+            }
+        }
+    }
+    else if(leigh == 1)
+    {
+        if(num_left_block_ != expan_tensor_lattice->num_left_block_)
+        {
+            cout << "num_left_dim_ is not equal to expan_tensor_lattice in CombineTensorLattice!" << endl;
+            exit(-1);
+        }
+        for(int l=0;l<num_left_block_;++l)
+        {
+            if(left_block_[l] != expan_tensor_lattice->left_block_[l])
+            {
+                cout << "left_block_ is not equal to expan_tensor_lattice in CimbineTensorLattice!" << endl;
+                exit(-1);
+            }
+        }
+    }
+
+    if(leigh == 0)
+    {
+        tmp_num_leigh_block[0] = num_left_block_;
+        tmp_leigh_block[0] = left_block_;
+        tmp_leigh_dim[0] = left_dim_;
+        
+        tmp_num_leigh_block[1] = expan_tensor_lattice->num_left_block_;
+        tmp_leigh_block[1] = expan_tensor_lattice->left_block_;
+        tmp_leigh_dim[1] = expan_tensor_lattice->left_dim_;
+    }
+    else if(leigh == 1)
+    {
+        tmp_num_leigh_block[0] = num_right_block_;
+        tmp_leigh_block[0] = right_block_;
+        tmp_leigh_dim[0] = right_dim_;
+        
+        tmp_num_leigh_block[1] = expan_tensor_lattice->num_right_block_;
+        tmp_leigh_block[1] = expan_tensor_lattice->right_block_;
+        tmp_leigh_dim[1] = expan_tensor_lattice->right_dim_;
+    }
+
+    num_leigh_block = tmp_num_leigh_block[0];
+
+    // compute new num_leigh_block
+    for(int i=0;i<tmp_num_leigh_block[0];++i)
+    {
+        flag = false;
+        for(int j=0;j<tmp_num_leigh_block[1];++j)
+        {
+            if(tmp_leigh_block[0][i] == tmp_leigh_block[1][j]) 
+            {
+                flag = true;
+                break;
+            }
+        }
+        if(flag == false) num_leigh_block++;
+    }
+    
+    leigh_block = new int[num_leigh_block];
+    leigh_dim = new int[num_leigh_block];
+    for(int i=0;i<tmp_num_leigh_block[0];++i) leigh_dim[i] = tmp_leigh_dim[0][i];
+    // compute new leigh_block and leigh_dim
+    int k = tmp_num_leigh_block[0];
+    for(int j=0;j<tmp_num_leigh_block[1];++j)
+    {
+        flag = false;
+        for(int i=0;i<tmp_num_leigh_block[0];++i)
+        {
+            if(tmp_leigh_block[0][i] == tmp_leigh_block[1][j])
+            {
+                flag = true;
+                leigh_dim[i] += tmp_leigh_dim[1][j];
+                break;
+            }
+        }
+        if(flag = false)
+        {
+            leigh_block[k] = tmp_leigh_block[1][j];
+            leigh_dim[k] = tmp_leigh_dim[1][j];
+            k++;
+        }
+    }
+    // reorder leigh_block ascending depend on leigh_block
+    QuickSort(leigh_block, leigh_dim, 0, num_leigh_block-1, 1);
+}
 
 void RealTensorLattice::ResetTensorLattice()
 {
@@ -408,7 +506,7 @@ void RealTensorLattice::ComputeTruncateDim(int max_dim, double canonical_precisi
             }
         }
         for(int i=0;i<num_singular_block;++i) truncate_dim[i] = 0;
-        QuickSort(tmp_singular_value, tmp_singular_block, 0, total_dim-1);
+        QuickSort<double>(tmp_singular_value, tmp_singular_block, 0, total_dim-1, 0);
         for(int i=0;i<max_dim;++i) truncate_dim[tmp_singular_block[i]]++;
         delete[] tmp_singular_value;
         delete[] tmp_singular_block;

@@ -1,7 +1,8 @@
 #ifndef DMRGCC_TENSOR_REAL_MATRIX_H_
 #define DMRGCC_TENSOR_REAL_MATRIX_H_
 
-#include "util/general.h"
+//#include "util/general.h"
+#include "util/general.ih"
 
 //  A class of RealMatrix.
 //  This class includes usual methods to operare real matrix.

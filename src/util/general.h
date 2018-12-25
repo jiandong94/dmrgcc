@@ -39,9 +39,12 @@ using std::ifstream;
 //                            MKL_INT m, MKL_INT n, MKL_INT k, double alpha, double *a, 
 //                             MKL_INT lda, double *b, MKL_INT ldb, double beta, double *c, MKL_INT ldc);
 
+
 // quick sort
+// flag = 0 descending   flag = 1 ascending
 // return array and index
-void QuickSort(double* array, int* index, int left, int right);
+template <typename T>
+void QuickSort(T* array, int* index, int left, int right, int flag=0);
 
 
 inline double GetWallTime()
