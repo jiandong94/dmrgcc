@@ -89,6 +89,47 @@ class RealTensorSpace
     //
     void ResetTensorSpace(int site);
 
+    //
+    //
+    void CanonicalTensorSpace(int leigh, int site);
+
+    //
+    //
+    void MergeTensorSpace(int leigh, int site);
+
+    protected:
+
+    //
+    //
+    void ComputeLatticeBlock(int site, int &num_left_block, int &num_right_block, 
+            int* &left_block, int* &right_block);
+
+    //
+    //
+    void ComputeTensorIndex(int site, int &num_block, int* &left_index, int* &right_index,
+            int* &physics_index);
+
+    //
+    //
+    //void ComputeExpanTensorLattice();
+    
+    //
+    //
+    virtual void DefineQuantumTable();
+
+    //
+    //
+    virtual void ReorderQuantumTable(int num_quantum, int num_table, int** quantum_table, 
+                                     double mean_quantum);
+
+    //
+    //
+    virtual void MergeQuantumTable();
+
+    //
+    //
+    virtual int CheckQuantumTable(int site, int* left_table, int* right_table);
+
 };
 
 

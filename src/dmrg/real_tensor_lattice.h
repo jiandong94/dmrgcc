@@ -200,15 +200,6 @@ class RealTensorLattice
     void RightMergeTensorLattice(RealTensorLattice* tmp_tensor_lattice);
 
 
-
-
-
-
-
-
-
-
-
 };
 
 
