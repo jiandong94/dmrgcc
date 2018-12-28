@@ -105,7 +105,7 @@ int main()
     delete matrix_multiply;
     
     // test MKL 
-    /*
+    
     cout << endl;
     cout << "6. Test MKL dgemm speed" << endl;
     cout << "Test MKL speed: random_matrix[3000,3000]*random[3000,3000]" << endl;
@@ -121,7 +121,7 @@ int main()
         delete matrix_test;
         delete matrix_multiply;
     }
-    */
+    
     
 
 

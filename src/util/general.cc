@@ -7,7 +7,7 @@ void ReorderRelevantArray(int num_quantum, int num_table,
     int **tmp_quantum_table;
     tmp_quantum_table = new int* [num_table];
     for(int i=0;i<num_table;++i)
-        tmp_quantum_table = new int[num_quantum];
+        tmp_quantum_table[i] = new int[num_quantum];
     // reorder
     for(int i=0;i<num_table;++i)
         for(int j=0;j<num_quantum;++j)

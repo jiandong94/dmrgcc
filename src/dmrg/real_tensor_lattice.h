@@ -199,7 +199,15 @@ class RealTensorLattice
     //
     void RightMergeTensorLattice(RealTensorLattice* tmp_tensor_lattice);
 
+    //
+    //
+    void LeftExpanTensorLattice(RealTensorLattice* tmp_tensor_lattice, 
+            RealTensorLattice* expan_tensor_lattice);
 
+    //
+    //
+    void RightExpanTensorLattice(RealTensorLattice* tmp_tensor_lattice, 
+            RealTensorLattice* expan_tensor_lattice);
 };
 
 

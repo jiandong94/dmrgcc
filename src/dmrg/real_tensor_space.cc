@@ -48,14 +48,13 @@ void RealTensorSpace::InitializeTensorSpace(int initial_block, int initial_dim)
     cout << "Initial Block = " << initial_block << ", Intial Dimension = " << initial_dim << endl;
     max_block_ = initial_block;
     max_dim_ = -1;
-    noise_factor = 10;
-    canonical_precision = 1e-30;
+    noise_factor_ = 10;
+    canonical_precision_ = 1e-30;
 
     // initial lattice block
     for(int i=0;i<num_site_;++i)
     {
         ComputeLatticeBlock(i, num_left_block, num_right_block, left_block, right_block);
-        
         left_dim = new int[num_left_block];
         for(int l=0;l<num_left_block;++l)
         {
@@ -67,7 +66,7 @@ void RealTensorSpace::InitializeTensorSpace(int initial_block, int initial_dim)
         for(int r=0;r<num_right_block;++r)
         {
             if(i == num_site_mm_) right_dim[r] = 1;
-            else left_dim[r] = initial_dim;
+            else right_dim[r] = initial_dim;
         }
 
         tensor_lattice_[i]->DefineTensorLattice(num_left_block, num_right_block, left_block, 
@@ -93,15 +92,15 @@ void RealTensorSpace::InitializeTensorSpace(int initial_block, int initial_dim)
         if(i == num_site_mm_) column = 1;
         tensor_lattice_[i]->DefineTensorLattice(num_block, left_index, right_index, 
                 physics_index, row, column);
-
+        
         delete[] left_index;
         delete[] right_index;
         delete[] physics_index;
 
-        CanonicalTensorSpace(0, i);
         if(i > 0) MergeTensorSpace(0, i);
-
-        if(disk_cache_ = true)
+        CanonicalTensorSpace(0, i);
+        
+        if(disk_cache_ == true)
         {
             RecordTensorSpace(i);
             ResetTensorSpace(i);
@@ -135,7 +134,7 @@ void RealTensorSpace::PrintTensorSpace()
         }
     }
     cout << "Tensor Lattice: " << endl;
-    for(int i=0;i<num_site;++i)
+    for(int i=0;i<num_site_;++i)
     {
         cout << "----------Site="<< i << "----------" << endl;
         tensor_lattice_[i]->PrintTensorLattice();
@@ -159,7 +158,7 @@ void RealTensorSpace::WriteTensorSpace(ofstream &tensor_space_file)
     tensor_space_file.write((char*) &num_site_pp_, sizeof(int));
     tensor_space_file.write((char*) &num_site_mm_, sizeof(int));
 
-    tensor_space_file.write((char*) &num_quant_, sizeof(int));
+    tensor_space_file.write((char*) &num_quantum_, sizeof(int));
     for(int i=0;i<num_site_pp_;++i)
         tensor_space_file.write((char*) &num_table_[i], sizeof(int));
     for(int i=0;i<num_site_pp_;++i)
@@ -215,12 +214,12 @@ void RealTensorSpace::ReadTensorSpace(ifstream &tensor_space_file)
     tensor_space_file.read((char*) &num_site_pp_, sizeof(int));
     tensor_space_file.read((char*) &num_site_mm_, sizeof(int));
 
-    tensor_space_file.read((char*) &num_quant_, sizeof(int));
-    num_table_ = new int[num_quant];
+    tensor_space_file.read((char*) &num_quantum_, sizeof(int));
+    num_table_ = new int[num_quantum_];
     for(int i=0;i<num_site_pp_;++i)
         tensor_space_file.read((char*) &num_table_[i], sizeof(int));
     
-    quantum_table_ = new int** [num_quant];
+    quantum_table_ = new int** [num_quantum_];
     for(int i=0;i<num_site_pp_;++i)
     {
         quantum_table_[i] = new int* [num_table_[i]];
@@ -277,9 +276,9 @@ void RealTensorSpace::ResetTensorSpace(int site)
 void RealTensorSpace::CanonicalTensorSpace(int leigh, int site)
 {
     if(leigh==0) 
-        tensor_lattice_[site]->LeftCanonicalTensorLattice(max_dim_, canonical_precision);
+        tensor_lattice_[site]->LeftCanonicalTensorLattice(max_dim_, canonical_precision_);
     else if(leigh==1)
-        tensor_lattice_[site]->RightCanonicalTensorLattice(max_dim_, canonical_precision);
+        tensor_lattice_[site]->RightCanonicalTensorLattice(max_dim_, canonical_precision_);
 }
 
 void RealTensorSpace::MergeTensorSpace(int leigh, int site)
@@ -289,6 +288,80 @@ void RealTensorSpace::MergeTensorSpace(int leigh, int site)
     else if(leigh==1 && site<num_site_mm_)
         tensor_lattice_[site]->RightMergeTensorLattice(tensor_lattice_[site+1]);
 }
+
+void RealTensorSpace::ExpanTensorSpace(int leigh, int site)
+{
+    RealTensorLattice *origin_tensor_lattice;
+    int num_left_block, num_right_block, *left_block, *right_block, *left_dim, *right_dim;
+    int num_block, *left_index, *right_index, *physics_index;
+
+    if(max_block_<0||max_dim_<0||noise_factor_>1) return;
+
+    if(expan_tensor_lattice_ == nullptr)
+    {
+        cout << "expan_tensor_lattice is nullptr!" << endl;
+        exit(-1);
+    }
+    if((leigh==0&&site==num_site_) || (leigh==1&&site==0))
+    {
+        cout << "choose the wrong site in ExpanTensorLattice!" << endl;
+    }
+
+    origin_tensor_lattice = new RealTensorLattice(tensor_lattice_[site]);
+
+    if(leigh == 0)
+    {
+        num_left_block = origin_tensor_lattice->get_num_left_block();
+        left_block = origin_tensor_lattice->get_left_block();
+        left_dim = origin_tensor_lattice->get_left_dim();
+        tensor_lattice_[site]->CombineTensorLattice(1, num_right_block, right_block, 
+                right_dim, expan_tensor_lattice_);
+    }
+    if(leigh == 1)
+    {
+        num_right_block = origin_tensor_lattice->get_num_right_block();
+        right_block = origin_tensor_lattice->get_right_block();
+        right_dim = origin_tensor_lattice->get_right_dim();
+        tensor_lattice_[site]->CombineTensorLattice(0, num_left_block, left_block, 
+                left_dim, expan_tensor_lattice_);
+    }
+
+    tensor_lattice_[site]->DefineTensorLattice(num_left_block, num_right_block, 
+            left_block, right_block, left_dim, right_dim);
+    ComputeTensorIndex(site, num_block, left_index, right_index, physics_index);
+    tensor_lattice_[site]->DefineTensorLattice(num_block, left_index, right_index, 
+            physics_index, 1, 1);
+    tensor_lattice_[site]->ResetTensorLattice();
+    
+    if(leigh == 0)
+        tensor_lattice_[site]->LeftExpanTensorLattice(origin_tensor_lattice, 
+                                                      expan_tensor_lattice_);
+    else if(leigh == 1)
+        tensor_lattice_[site]->RightExpanTensorLattice(origin_tensor_lattice, 
+                                                      expan_tensor_lattice_);
+
+    delete expan_tensor_lattice_;
+    expan_tensor_lattice_ = nullptr;
+
+    delete origin_tensor_lattice;
+
+    if(leigh == 0) 
+    {
+        delete[] right_block;
+        delete[] right_dim;
+    }
+    else if(leigh == 1) 
+    {
+        delete[] left_block;
+        delete[] left_dim;
+    }
+
+    delete[] left_index;
+    delete[] right_index;
+    delete[] physics_index;
+}
+
+
 
 void RealTensorSpace::ComputeLatticeBlock(int site, int &num_left_block, int &num_right_block, 
         int* &left_block, int* &right_block)
@@ -302,15 +375,15 @@ void RealTensorSpace::ComputeLatticeBlock(int site, int &num_left_block, int &nu
     // compute the left block from the previous site
     if(site == 0)
     {
-        num_left_block = 0;
+        num_left_block = 1;
         left_block = new int[1];
         left_block[0] = 0;
     }
     else
     {
-        num_left_block = tensor_lattice_[site]->get_num_left_block();
+        num_left_block = tensor_lattice_[site-1]->get_num_right_block();
         left_block = new int[num_left_block];
-        tmp_left_block = tensor_lattice_[site]->get_left_block();
+        tmp_left_block = tensor_lattice_[site-1]->get_right_block();
         for(int i=0;i<num_left_block;++i)
             left_block[i] = tmp_left_block[i];
     }
@@ -329,7 +402,7 @@ void RealTensorSpace::ComputeLatticeBlock(int site, int &num_left_block, int &nu
                 break;
             }
         }
-        if(num_right_block == max_block)
+        if(num_right_block == max_block_)
             break;
     }
 
@@ -349,7 +422,7 @@ void RealTensorSpace::ComputeLatticeBlock(int site, int &num_left_block, int &nu
                 break;
             }
         }
-        if(k == max_block)
+        if(k == max_block_)
             break;
     }
 }
@@ -370,7 +443,7 @@ void RealTensorSpace::ComputeTensorIndex(int site, int &num_block, int* &left_in
 
     num_block = 0;
     for(int i=0;i<num_left_block;++i) for(int j=0;j<num_right_block;++j)
-    {   
+    {  
         info = CheckQuantumTable(site, left_quantum_table[left_block[i]], 
                                        right_quantum_table[right_block[j]]);
         if(info != -1)
@@ -402,39 +475,8 @@ void RealTensorSpace::ComputeTensorIndex(int site, int &num_block, int* &left_in
 
 void RealTensorSpace::DefineQuantumTable()
 {
-    double mean_quantum;
-    int min_from_left, max_from_left, min_from_right, max_from_right, min_final, max_final;
-    num_quantum_ = 1;
-    num_table_ = new int[num_site_pp_];
-    quantum_table_ = new int** [num_site_pp_];
-
-    for(int i=0;i<num_site_pp_;++i)
-    {
-        if(i == 0)
-        {
-            min_final = 0;
-            max_finial = 0;
-            mean_quantum = 0;
-        }
-        else
-        {
-            min_from_left = 0;
-            max_from_left = (num_level-1)*i;
-            min_from_right = n-(num_site_-i)*(num_level-1);
-            max_from_right = n;
-            min_final = max(min_from_left, min_from_right);
-            max_final = min(max_from_left, max_from_right);
-
-            mean_quantum = num_boson/num_site*i;
-        }
-        num_tale_[i] = max_final - min_final+1;
-        quantum_table_[i] = new int* [num_table_[i]];
-        for(int j=0;j<num_table_[i];++j)
-            quantum_table_[i][j] = new int[num_quantum_];
-        for(int j=min_final;j<max_final;++j)
-            quantum_table_[i][j-min_final][0] = j;
-        ReorderQuantumTable(num_quantum_, num_table_[i], quantum_table_[i], &mean_quantum);
-    }
+    cout << "Base class do not define QuantumTable" << endl;
+    exit(-1);
 }
 
 void RealTensorSpace::ReorderQuantumTable(int num_quantum, int num_table, int** quantum_table, 
@@ -443,7 +485,7 @@ void RealTensorSpace::ReorderQuantumTable(int num_quantum, int num_table, int** 
     double* deviate;
     int* index;
     deviate = new double[num_table];
-    
+    index = new int[num_table];
     for(int i=0;i<num_table;++i)
     {
         deviate[i] = 0.0;
@@ -453,22 +495,15 @@ void RealTensorSpace::ReorderQuantumTable(int num_quantum, int num_table, int** 
     }
     QuickSort(deviate, index, 0, num_table-1, 1);
     ReorderRelevantArray(num_quantum, num_table, quantum_table, index);
+    delete[] deviate;
+    delete[] index;
 }
+
+void RealTensorSpace::MergeQuantumTable()
+{}
 
 int RealTensorSpace::CheckQuantumTable(int site, int* left_table, int* right_table)
 {
-    int info = -1;
-
-    for(int i=0;i<num_level;++i)
-    {
-        if(left_table[0]+i == right_table[0])
-        {
-            info = i;
-            break
-        }
-    }
-    return info;
+    cout << "Base class can not check QuantumTable" << endl;
+    exit(-1);
 }
-
-
-

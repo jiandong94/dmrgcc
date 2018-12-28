@@ -121,7 +121,7 @@ int* RealTensorLattice::get_left_dim()
 
 int RealTensorLattice::get_num_right_block()
 {
-    return num_left_block_;
+    return num_right_block_;
 }
 
 int* RealTensorLattice::get_right_block()
@@ -589,7 +589,6 @@ void RealTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canonical
     }
     ComputeTruncateDim(max_dim, canonical_precision, num_right_block_, singular_dim, 
                        singular_value, truncate_dim);
-    for(int r=0;r<3;++r) cout << "truncate_dim[r]: " << truncate_dim[r] << endl;
 
     // left_canonical_tensor => ket_tensor_
     // singular_value*right_canonical_tensor_ => canonical_tensor_
@@ -945,9 +944,150 @@ void RealTensorLattice::RightMergeTensorLattice(RealTensorLattice* tmp_tensor_la
     tmp_tensor_lattice->canonical_tensor_ = nullptr;
 }
 
+void RealTensorLattice::LeftExpanTensorLattice(RealTensorLattice* tmp_tensor_lattice, 
+        RealTensorLattice* expan_tensor_lattice)
+{
+    RealMatrix *origin_tensor, *tmp_tensor, *expan_tensor;
+    int position, enable_expan[2], position_expan[2];
+
+    for(int r=0;r<num_right_block_;++r)
+    {
+        enable_expan[0] = -1;
+        for(int i=0;i<tmp_tensor_lattice->num_right_block_;++i)
+        {
+            if(right_block_[i] == tmp_tensor_lattice->right_block_[i])
+            {
+                enable_expan[0] = i;
+                break;
+            }
+        }
+
+        enable_expan[1] = -1;
+        if(expan_tensor_lattice != nullptr)
+        {
+            for(int i=0;i<expan_tensor_lattice->num_right_block_;++i)
+            {
+                if(right_block_[i] == expan_tensor_lattice->right_block_[i])
+                {
+                    enable_expan[1] = i;
+                    break;
+                }
+            }
+        }
+
+        for(int l=0;l<num_left_block_;++l)
+        {
+            position = ket_tensor_->FindMatrixBlock(l, r);
+            if(position != -1)
+            {
+                origin_tensor = ket_tensor_->get_matrix_block(position);
+
+                if(enable_expan[0] != -1)
+                {
+                    position_expan[0] = tmp_tensor_lattice->ket_tensor_->FindMatrixBlock(l, enable_expan[0]);
+                    if(position_expan[0] != -1)
+                    {
+                        tmp_tensor = tmp_tensor_lattice->ket_tensor_->get_matrix_block(position_expan[0]);
+                        origin_tensor->AddToMatrix(tmp_tensor);
+                    }
+                }
+
+                if(enable_expan[1] != -1)
+                {
+                    position_expan[1] = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(l, enable_expan[1]);
+                    if(position_expan[0] != -1)
+                    {
+                        expan_tensor = expan_tensor_lattice->ket_tensor_->get_matrix_block(position_expan[1]);
+                        origin_tensor->ExpanMatrix(1, expan_tensor);
+                    }
+
+                }
+
+                if(enable_expan[0]!=-1 && enable_expan[1]==-1)
+                {
+                    cout << "enable_expan[0]!=-1 && enable_expan[1]==-1 in LeftExpanTensorLattice!" << endl;
+                }
+                if(enable_expan[0]==-1 && enable_expan[1]==-1)
+                {
+                    cout << "enable_expan[0]==-1 && enable_expan[1]==-1 in LeftExpanTensorLattice!" << endl;
+                }
+            }
+        }
+    }
+}
 
 
+void RealTensorLattice::RightExpanTensorLattice(RealTensorLattice* tmp_tensor_lattice, 
+        RealTensorLattice* expan_tensor_lattice)
+{
+    RealMatrix *origin_tensor, *tmp_tensor, *expan_tensor;
+    int position, enable_expan[2], position_expan[2];
 
+    for(int l=0;l<num_left_block_;++l)
+    {
+        enable_expan[0] = -1;
+        for(int i=0;i<tmp_tensor_lattice->num_left_block_;++i)
+        {
+            if(left_block_[i] == tmp_tensor_lattice->left_block_[i])
+            {
+                enable_expan[0] = i;
+                break;
+            }
+        }
+
+        enable_expan[1] = -1;
+        if(expan_tensor_lattice != nullptr)
+        {
+            for(int i=0;i<expan_tensor_lattice->num_left_block_;++i)
+            {
+                if(left_block_[i] == expan_tensor_lattice->left_block_[i])
+                {
+                    enable_expan[1] = i;
+                    break;
+                }
+            }
+        }
+
+        for(int r=0;r<num_right_block_;++r)
+        {
+            position = ket_tensor_->FindMatrixBlock(l, r);
+            if(position != -1)
+            {
+                origin_tensor = ket_tensor_->get_matrix_block(position);
+
+                if(enable_expan[0] != -1)
+                {
+                    position_expan[0] = tmp_tensor_lattice->ket_tensor_->FindMatrixBlock(enable_expan[0], r);
+                    if(position_expan[0] != -1)
+                    {
+                        tmp_tensor = tmp_tensor_lattice->ket_tensor_->get_matrix_block(position_expan[0]);
+                        origin_tensor->AddToMatrix(tmp_tensor);
+                    }
+                }
+
+                if(enable_expan[1] != -1)
+                {
+                    position_expan[1] = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(enable_expan[1], r);
+                    if(position_expan[0] != -1)
+                    {
+                        expan_tensor = expan_tensor_lattice->ket_tensor_->get_matrix_block(position_expan[1]);
+                        origin_tensor->ExpanMatrix(0, expan_tensor);
+                    }
+
+                }
+
+                if(enable_expan[0]!=-1 && enable_expan[1]==-1)
+                {
+                    cout << "enable_expan[0]!=-1 && enable_expan[1]==-1 in RightExpanTensorLattice!" << endl;
+                }
+                if(enable_expan[0]==-1 && enable_expan[1]==-1)
+                {
+                    cout << "enable_expan[0]==-1 && enable_expan[1]==-1 in RightExpanTensorLattice!" << endl;
+                }
+            }
+        }
+    }
+}
 
 
 

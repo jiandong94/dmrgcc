@@ -37,7 +37,7 @@ class RealTensorSpace
     RealTensorLattice* expan_tensor_lattice_;
 
     public:
-    
+   
     // destructor
     //
     virtual ~RealTensorSpace();
@@ -97,6 +97,9 @@ class RealTensorSpace
     //
     void MergeTensorSpace(int leigh, int site);
 
+    //
+    //
+    void ExpanTensorSpace(int leigh, int site);
     protected:
 
     //
@@ -120,7 +123,7 @@ class RealTensorSpace
     //
     //
     virtual void ReorderQuantumTable(int num_quantum, int num_table, int** quantum_table, 
-                                     double mean_quantum);
+                                     double *mean_quantum);
 
     //
     //
