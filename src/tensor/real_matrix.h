@@ -117,6 +117,10 @@ class RealMatrix
     //
     RealMatrix* MultiplyToMatrix(RealMatrix* tmp_matrix);
 
+    //
+    //
+    RealMatrix* MatrixKronProduct(RealMatrix* tmp_matrix_1, RealMatrix* tmp_matrix_2);
+
     // element-wise product
     //
     void MatrixElementProduct(RealMatrix* tmp_matrix);

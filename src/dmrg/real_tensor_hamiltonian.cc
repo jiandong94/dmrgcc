@@ -98,6 +98,64 @@ void RealTensorHamiltonian::ReadTensorHamiltonian(ifstream &tensor_hamiltonian_f
         delete tensor_hamiltonian_[i];
     delete[] tensor_hamiltonian_;
 
+    tensor_hamiltonian_file.read((char*) &num_site_, sizeof(int));
+    tensor_hamiltonian_file.read((char*) &num_site_pp_, sizeof(int));
+    tensor_hamiltonian_file.read((char*) &num_site_mm_, sizeof(int));
+    
+    tensor_hamiltonian_file.read((char*) &num_operator_, sizeof(int));
+    basic_operator_ = new RealMatrix*[num_operator_];
+    for(int i=0;i<num_operator_;++i)
+        basic_operator_[i]->ReadMatrix(tensor_hamiltonian_file);
 
+    tensor_hamiltonian_file.read((char*) &num_quantum_, sizeof(int));
+    num_table_ = new int[num_site_pp_];
+    for(int i=0;i<num_site_pp_;++i)
+        tensor_hamiltonian_file.read((char*) &num_table_[i], sizeof(int));
+    quantum_table_ = new int** [num_site_pp_];
+    for(int i=0;i<num_site_pp_;++i)
+    {
+        quantum_table_[i] = new int* [num_table_[i]];
+        for(int j=0;j<num_table_[i];++j)
+        {
+            quantum_table_[i][j] = new int[num_quantum_];
+            for(int k=0;k<num_quantum_;++k)
+                tensor_hamiltonian_file.read((char*) &quantum_table_[i][j][k], sizeof(int));
+        }
+    }
+}
 
+void ExpanTensorHamiltonian(int site, int expan_operator_index, int expan_coefficient, 
+        int* expan_table)
+{
+    int expan_num_table, **expan_quantum_table;
+    leigh = -1;
+    if(site == 0) leigh = 0;
+    if(site == num_site_mm_) leigh = 1;
+
+    // expan tensor operator
+    tensor_hamiltonian[site]->ExpanTensorOperator(basic_tensor_, leigh, 
+            expan_operator_index, expan_coefficient);
+
+    // expan quantum table
+    if(site < num_site_mm_)
+    {
+        expan_num_table = num_table_[site+1]+1;
+        expan_quantum_table = new int* [expan_num_table];
+        for(int i=0;i<expan_num_table)
+            expan_quantum_table[i] = new int[num_quantum_];
+        for(int j=0;j<num_quantum_;++j)
+        {
+            for(int i=0;i<num_table_[site+1];++i)
+            {  
+                expan_quantum_table[i][j] = quantum_table[site+1][i][j];
+            }
+            expan_quantum_table[num_table[site+1]][j] = expan_table[j];
+        }
+
+        for(int i=0;i<num_table_[site+1];++i) delete[] quantum_table_[site+1][i];
+        delete[] quantum_table_[site+1];
+
+        num_table_[site+1] = expan_num_table;
+        quantum_table_[site+1] = expan_quantum_table;
+    }
 }

@@ -71,6 +71,19 @@ class RealTensorOperator
     //
     //
     void ResetTensorOperator();
+
+    //
+    //
+    void ExpanTensorOperator(RealMatrix** basic_operator, int leigh, int expan_operator_index, 
+            double expan_coefficient);
+
+    //
+    //
+    bool LeftCheckZero(int left_bond_index, int physics_index);
+    
+    //
+    //
+    bool RightCheckZero(int right_bond_index, int physics_index);
 };
 
 inline void RealTensorOperator::DefineTensorOperator()

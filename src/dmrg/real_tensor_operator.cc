@@ -139,7 +139,7 @@ void RealTensorOperator::ReadTensorOperator(ifstream &tensor_operator_file)
 }
 
 void RealTensorOperator::ExpanTensorOperator(RealMatrix** basic_operator, int leigh, 
-        int tmp_operator_index, double tmp_coefficient);
+        int expan_operator_index, double expan_coefficient);
 {
     RealMatrix*** expan_tensor_operator;
     int expan_left_bond, expan_right_bond, edge[2], expan_index[2];
@@ -188,10 +188,26 @@ void RealTensorOperator::ExpanTensorOperator(RealMatrix** basic_operator, int le
         expan_index[0] = edge[0]*left_bond_;
         expan_index[1] = edge[1]*right_bond_;
         expan_tensor_operator[expan_index[0]][expan_index[1]]->set_matrix_element(i, j, 
-        tmp_coefficient*basic_tensor[tmp_operator_index]->get_matrix_element(i, j));
+        expan_coefficient*basic_tensor[expan_operator_index]->get_matrix_element(i, j));
     }
     ResetTensorOperator();
     left_bond_ = expan_left_bond;
     right_bond_ = expan_right_bond;
     tensor_operator_ = expan_tensor_operator;
+}
+
+bool RealTensorOperator::LeftCheckZero(int l, int p1)
+{
+    bool zero_flag = false;
+    for(int r=0;r<right_bond_;++r)
+        for(int p2=0;p2<physics_dim_;++p2)
+        {
+            if(fabs(tensor_operator_[l][r]->get_matrix_element(p1, p2)) > 1E-15)
+            {
+                zero_flag = true;
+                break;
+            }
+        }
+    
+    return zero_flag;
 }

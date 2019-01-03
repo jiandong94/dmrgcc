@@ -290,6 +290,13 @@ void RealMatrixBlock::ResetMatrixBlock()
 
 }
 
+void RealMatrixBlock::AddToMatrixBlock(int position, RealMatrix* tmp_matrix)
+{
+    if(matrix_block_ != 0)
+    {
+        matrix_block_[position]->AddToMatrix(tmp_matrix);
+    }
+}
 
 int RealMatrixBlock::FindMatrixBlock(int left, int right)
 {

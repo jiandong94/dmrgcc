@@ -5,6 +5,7 @@
 
 class RealMatrixBlock
 {
+    friend class RealTensorContraction;
     protected:
 
     int num_block_;
@@ -97,6 +98,10 @@ class RealMatrixBlock
     //
     //
     void ResetMatrixBlock();
+
+    //
+    //
+    void AddToMatrixBlock(int position, RealMatrix* tmp_matrix);
 
     // return position
     //
