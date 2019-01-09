@@ -5,6 +5,7 @@
 
 class RealTensorLattice
 {
+    friend class RealTensorContraction;
     protected:
     // physics dimension
     int physics_dim_;

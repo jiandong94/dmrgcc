@@ -114,7 +114,8 @@ class RealTensorSpace
 
     //
     //
-    //void ComputeExpanTensorLattice();
+    void ComputeExpanTensorLattice(int leigh, int site, int operator_num_table, 
+            int **operator_quantum_table, int** &mapping_table);
     
     //
     //
@@ -127,7 +128,7 @@ class RealTensorSpace
 
     //
     //
-    virtual void MergeQuantumTable();
+    virtual void MergeQuantumTable(int *merge_quantum_table, int *operator_quantum_table, int *space_quantum_table);
 
     //
     //

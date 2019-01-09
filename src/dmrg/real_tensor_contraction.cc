@@ -5,16 +5,16 @@ RealTensorContraction::RealTensorContraction(int left_bond, int right_bond)
     left_bond_ = left_bond;
     right_bond_ = right_bond;
 
-    left_contraction_tensor_ = RealMatrixBlock* [left_bond_];
+    left_contraction_tensor_ = new RealMatrixBlock* [left_bond_];
     for(int i=0;i<left_bond_;++i)
         left_contraction_tensor_[i] = nullptr;
 
-    right_contraction_tensor_ = RealMatrixBlock* [right_bond_];
+    right_contraction_tensor_ = new RealMatrixBlock* [right_bond_];
     for(int i=0;i<right_bond_;++i)
         right_contraction_tensor_[i] = nullptr;
 }
 
-RealTensroContraction::~RealTensorContraction()
+RealTensorContraction::~RealTensorContraction()
 {
     for(int i=0;i<left_bond_;++i)
         delete left_contraction_tensor_[i];
@@ -25,12 +25,12 @@ RealTensroContraction::~RealTensorContraction()
     delete[] right_contraction_tensor_;
 }
 
-int RealTensorContraction::get_left_bond_()
+int RealTensorContraction::get_left_bond()
 {
     return left_bond_;
 }
 
-int RealTensorContraction::get_right_bond_()
+int RealTensorContraction::get_right_bond()
 {
     return right_bond_;
 }
@@ -68,7 +68,7 @@ void RealTensorContraction::PrintTensorContraction()
 void RealTensorContraction::WriteTensorContraction(int leigh, char* tensor_contraction_name)
 {
     ofstream tensor_contraction_file;
-    tensor_contraction_file.open(tensor_space_name, ios::binary|ios::out);
+    tensor_contraction_file.open(tensor_contraction_name, ios::binary|ios::out);
 
     if(leigh == 0)
     {
@@ -87,7 +87,7 @@ void RealTensorContraction::WriteTensorContraction(int leigh, char* tensor_contr
 void RealTensorContraction::ReadTensorContraction(int leigh, char* tensor_contraction_name)
 {
     ifstream tensor_contraction_file;
-    tensor_contraction_file.open(tensor_space_name, ios::binary|ios::in);
+    tensor_contraction_file.open(tensor_contraction_name, ios::binary|ios::in);
 
     if(leigh == 0)
     {
@@ -105,7 +105,7 @@ void RealTensorContraction::ReadTensorContraction(int leigh, char* tensor_contra
 
 void RealTensorContraction::DefineTensorContraction(int leigh)
 {
-    RealMatrix tmp_tensor;
+    RealMatrix *tmp_tensor;
     
     tmp_tensor = new RealMatrix(1,1);
     tmp_tensor->set_matrix_element(0,0,1);
@@ -145,6 +145,618 @@ void RealTensorContraction::ResetTensorContraction(int leigh)
     }
 }
 
+
+/*
+//              E^{p1,i,o2+a_1}_{a_0,a_1}   
+//                                          
+//                ______ 
+//               |i,a_0
+//               |      
+//               |        |p1
+//               |______-----___      __  
+//               | o_1  - W -   o_2     |
+//               |      -----           |_ o_2+j 
+//               |        |p2           |
+//               |______ --- ___      __|
+//                k,b_1 - K -   j,a_1
+//                       ---  
+*/                                       
+void RealTensorContraction::LeftExpanTensorContraction(RealTensorLattice* tensor_lattice, RealTensorOperator* tensor_operator, 
+        RealTensorLattice* expan_tensor_lattice, int** mapping_table, double noise_factor)
+{
+    RealMatrix *expan_tensor, *first_tensor, *second_tensor, *tmp_tensor[3];
+    bool *exist_flag;
+    double element;
+    int left_bond, right_bond, num_left_block, num_right_block;
+    int *num_same_index, **position_same_index, **expan_table, min_expan, max_expan;
+    int num_block, *left_index, *right_index, **physics_index;
+    int index, first_dim[2], expan_dim[2], num_leigh_block, *leigh_block;
+    int position, p1, p2, idx, jdx, kdx, ldx;
+
+    left_bond = tensor_operator->get_left_bond();
+    right_bond = tensor_operator->get_right_bond();
+    num_left_block = tensor_lattice->get_num_left_block();
+    num_right_block = tensor_lattice->get_num_right_block();
+    
+    exist_flag = new bool[expan_tensor_lattice->get_num_right_block()];
+    for(int i=0;i<expan_tensor_lattice->get_num_right_block();++i)
+        exist_flag[i] = false;
+    
+    // for each left index(block), find all possible right indiced(blocks)
+    num_same_index = new int[num_left_block];
+    position_same_index = new int* [num_left_block];
+    for(int i=0;i<num_left_block;++i)
+        tensor_lattice->ket_tensor_->FindMatrixBlock(num_same_index[i], position_same_index[i], 0, i);
+
+    // expan_table is like mapping_table, which 
+    expan_table = new int* [right_bond];
+    for(int o2=0;o2<right_bond;++o2)
+    {
+        expan_table[o2] = new int[num_right_block];
+        for(int r=0;r<num_right_block;++r)
+            expan_table[o2][r] = -1;
+    }
+
+    min_expan = 1;
+    max_expan = 25;
+    //--------------------------------------------------------------------------------------
+    // exist_flag
+    for(int o1=0;o1<left_bond;++o1)
+    for(int i=0;i<left_contraction_tensor_[o1]->get_num_block();++i)
+    {
+        idx = left_contraction_tensor_[o1]->left_index_[i];
+        kdx = left_contraction_tensor_[o1]->right_index_[i];
+        tmp_tensor[0] = left_contraction_tensor_[o1]->get_matrix_block(i);
+
+        if(tmp_tensor[0]->get_row() == 0) continue;
+        for(int k=0;k<num_same_index[kdx];++k)
+        {
+            jdx = tensor_lattice->ket_tensor_->right_index_[position_same_index[kdx][k]];
+            p2 = tensor_lattice->physics_index_[kdx][jdx];
+            if(tensor_operator->MixedCheckZero(o1, p2) == false) continue; //zero
+            for(int o2=0;o2<right_bond;++o2)
+            {
+                ldx = mapping_table[o2][jdx];
+                position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(idx, ldx);
+
+                if(ldx!=-1 && position!=-1)
+                {
+                    p1 = expan_tensor_lattice->physics_index_[idx][ldx];
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
+                    if(element != 0.0) exist_flag[ldx] = true;
+                }
+            }
+        }
+    }
+
+    // num_leigh_block, leigh_block, physics_index
+    num_leigh_block = 0;
+    for(int i=0;i<expan_tensor_lattice->get_num_right_block();++i)
+        if(exist_flag[i] != false)
+            num_leigh_block++;
+    leigh_block = new int[num_leigh_block];
+    physics_index = new int* [expan_tensor_lattice->num_left_block_];
+    for(int i=0;i<expan_tensor_lattice->num_left_block_;++i)
+    {
+        physics_index[i] = new int[num_leigh_block];
+        for(int j=0;j<num_leigh_block;++j)
+            physics_index[i][j] = -1;
+    }
+
+    index = 0;
+    for(int i=0;i<expan_tensor_lattice->get_num_right_block();++i)
+    {
+        if(exist_flag[i] == true)
+        {
+            leigh_block[index] = expan_tensor_lattice->right_block_[i];
+            for(int j=0;j<expan_tensor_lattice->get_num_left_block();++j)
+            {
+                physics_index[j][index] = expan_tensor_lattice->physics_index_[j][i];
+            }
+            index++;
+        }
+    }
+
+    // expan_table
+    for(int o2=0;o2<right_bond;++o2) for(int r=0;r<num_right_block;++r)
+    {
+        expan_table[o2][r] = -1;
+        ldx = mapping_table[o2][r];
+        if(ldx != -1)
+        {
+            for(int i=0;i<num_leigh_block;++i)
+            {
+                if(expan_tensor_lattice->right_block_[ldx] == leigh_block[i])
+                {
+                    expan_table[o2][r] = i;
+                    break;
+                }
+            }
+        }
+
+    }
+    
+    // re-construct left_dim, right_block, right_dim, physics_index
+    // for expan_lattice
+    delete[] expan_tensor_lattice->right_block_;
+    delete[] expan_tensor_lattice->right_dim_;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i) 
+        delete[] expan_tensor_lattice->physics_index_[i];
+    delete[] expan_tensor_lattice->physics_index_;
+
+    expan_tensor_lattice->num_right_block_ = num_leigh_block;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+        expan_tensor_lattice->left_dim_[i] = tensor_lattice->left_dim_[i];
+    expan_tensor_lattice->right_block_ = new int[expan_tensor_lattice->num_right_block_];
+    expan_tensor_lattice->right_dim_ = new int[expan_tensor_lattice->num_right_block_];
+    for(int i=0;i<expan_tensor_lattice->num_right_block_;++i)
+    {
+        expan_tensor_lattice->right_block_[i] = leigh_block[i];
+        expan_tensor_lattice->right_dim_[i] = 0;
+    }
+    
+    expan_tensor_lattice->physics_index_ = new int* [expan_tensor_lattice->num_left_block_];
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+    {
+        expan_tensor_lattice->physics_index_[i] = new int[expan_tensor_lattice->num_right_block_];
+        for(int j=0;j<expan_tensor_lattice->get_num_right_block();++j)
+        {
+            expan_tensor_lattice->physics_index_[i][j] = physics_index[i][j];
+        }
+    }
+
+    // re-construct ket_tensor for expan_lattice
+    delete expan_tensor_lattice->ket_tensor_;
+    num_block = 0;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+    for(int j=0;j<expan_tensor_lattice->get_num_right_block();++j)
+    {
+        if(expan_tensor_lattice->physics_index_[i][j] != -1)
+            num_block++;
+    }
+
+    left_index = nullptr;
+    right_index = nullptr;
+    if(num_block != 0)
+    {
+        left_index = new int[num_block];
+        right_index = new int[num_block];
+        index = 0;
+        for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+        for(int j=0;j<expan_tensor_lattice->get_num_right_block();++j)
+        {
+            if(expan_tensor_lattice->physics_index_[i][j] != -1)
+            {
+                left_index[index] = i;
+                right_index[index] = j;
+                index++;
+            }
+        }
+        
+    }
+    expan_tensor_lattice->ket_tensor_ = new RealMatrixBlock(num_block, left_index, right_index);
+
+    delete[] exist_flag;
+    delete[] leigh_block;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+        delete[] physics_index[i];
+    delete[] physics_index;
+    delete[] left_index;
+    delete[] right_index;
+
+    //--------------------------------------------------------------------------------------
+    //
+    for(int o1=0;o1<left_bond;++o1)
+    for(int i=0;i<left_contraction_tensor_[o1]->get_num_block();++i)
+    {
+        idx = left_contraction_tensor_[o1]->left_index_[i];
+        kdx = left_contraction_tensor_[o1]->right_index_[i];
+        tmp_tensor[0] = left_contraction_tensor_[o1]->get_matrix_block(i);
+
+        if(tmp_tensor[0]->get_row() == 0) continue;
+        for(int k=0;k<num_same_index[kdx];++k)
+        {
+            jdx = tensor_lattice->ket_tensor_->right_index_[position_same_index[kdx][k]];
+            p2 = tensor_lattice->physics_index_[kdx][jdx];
+            if(tensor_operator->MixedCheckZero(o1, p2) == false) continue; //zero
+
+            tmp_tensor[1] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[kdx][k]];
+            
+            // L*K (a_0*b_1)*(b_1*a_1) = (a_0*a_1)
+            first_tensor = tmp_tensor[0]->MultiplyToMatrix(tmp_tensor[1]);
+            first_dim[0] = first_tensor->get_row();
+            first_dim[1] = first_tensor->get_column();
+
+            expan_dim[0] = first_dim[1];
+            expan_dim[1] = (int)(sqrt(first_dim[1]));
+            expan_dim[1] *= tensor_lattice->physics_dim_;
+            expan_dim[1] *= tensor_lattice->physics_dim_;
+            if(expan_dim[1] < min_expan) expan_dim[1] = min_expan;
+            if(expan_dim[1] > max_expan) expan_dim[1] = max_expan;
+
+            tmp_tensor[2] = new RealMatrix(expan_dim[0], expan_dim[1]);
+
+            for(int o2=0;o2<right_bond;++o2)
+            {
+                ldx = expan_table[o2][jdx];
+                position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(idx, ldx);
+
+                if(ldx!=-1 && position!=-1)
+                {
+                    p1 = expan_tensor_lattice->physics_index_[idx][ldx];
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
+                    if(element != 0.0)
+                    {
+                        tmp_tensor[2]->RandomMatrix();
+                        for(int t=0;t<min(expan_dim[0], expan_dim[1]);++t)
+                            tmp_tensor[2]->set_matrix_element(t, t, 0.1*element);
+                        // L*K*W*random_matrix
+                        second_tensor = first_tensor->MultiplyToMatrix(tmp_tensor[2]);
+                        expan_tensor = expan_tensor_lattice->ket_tensor_->matrix_block_[position];
+                        if(expan_tensor->get_row() == 0)
+                            expan_tensor->AddToMatrix(second_tensor);
+                        else 
+                            expan_tensor->ExpanMatrix(1, second_tensor);
+                        delete second_tensor;
+                    }
+                }
+            }
+            delete first_tensor;
+            delete tmp_tensor[2];
+        }
+    }
+    delete[] num_same_index;
+    for(int i=0;i<num_right_block;++i)
+        delete[] position_same_index[i];
+    delete position_same_index;
+
+    for(int i=0;i<right_bond;++i)
+        delete[] expan_table[i];
+    delete[] expan_table;
+
+    //---------------------------------------------------------------------------------------
+    // re-compute right_dim
+    for(int r=0;r<expan_tensor_lattice->get_num_right_block();++r)
+    {
+        expan_tensor_lattice->right_dim_[r] = 0;
+        for(int l=0;l<expan_tensor_lattice->get_num_left_block();++l)
+        {
+            position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(l, r);
+            if(position != -1)
+            {
+                expan_tensor = expan_tensor_lattice->ket_tensor_->matrix_block_[position];
+                expan_dim[1] = expan_tensor->get_column();
+                if(expan_dim[1] > expan_tensor_lattice->right_dim_[r]) 
+                    expan_tensor_lattice->right_dim_[r] = expan_dim[1];
+            }
+        }
+        
+        for(int l=0;l<expan_tensor_lattice->get_num_left_block();++l)
+        {
+            position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(l, r);
+            if(position != -1)
+            {
+                expan_tensor = expan_tensor_lattice->ket_tensor_->matrix_block_[position];
+                if(expan_tensor->get_row() == 0)
+                {
+                    cout << "row of expan_tensor is zero in LeftExpanTensorContraction" << endl;
+                    first_tensor = new RealMatrix(expan_tensor_lattice->left_dim_[r], expan_tensor_lattice->right_dim_[r]);
+                    expan_tensor->AddToMatrix(first_tensor);
+                    delete first_tensor;
+                }
+            }
+        }
+    } 
+
+    expan_tensor_lattice->ket_tensor_->MultiplyToScalar(noise_factor);
+}
+
+
+/*
+//                    F^{p1,o1+j,i}_{a_1,a_0}   
+//                                          
+//                                    ______
+//                                     i,a_0|
+//                                          |
+//                                 |p1      |
+//                     _      ___-----______|       
+//                    |    o_1   - W -  o_2 |   
+//              o_1+j_|          -----      |     
+//                    |            |p2      |     
+//                    |_      ___ --- ______|      
+//                       j,a_1   - K - k,b_1 
+//                                ---  
+*/                                       
+void RealTensorContraction::RightExpanTensorContraction(RealTensorLattice* tensor_lattice, RealTensorOperator* tensor_operator, 
+        RealTensorLattice* expan_tensor_lattice, int** mapping_table, double noise_factor)
+{
+    RealMatrix *expan_tensor, *first_tensor, *second_tensor, *tmp_tensor[3];
+    bool *exist_flag;
+    double element;
+    int left_bond, right_bond, num_left_block, num_right_block;
+    int *num_same_index, **position_same_index, **expan_table, min_expan, max_expan;
+    int num_block, *left_index, *right_index, **physics_index;
+    int index, first_dim[2], expan_dim[2], num_leigh_block, *leigh_block;
+    int position, p1, p2, idx, jdx, kdx, ldx;
+
+    left_bond = tensor_operator->get_left_bond();
+    right_bond = tensor_operator->get_right_bond();
+    num_left_block = tensor_lattice->get_num_left_block();
+    num_right_block = tensor_lattice->get_num_right_block();
+    
+    exist_flag = new bool[expan_tensor_lattice->get_num_left_block()];
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+        exist_flag[i] = false;
+    
+    // for each right index(block), find all possible left indiced(blocks)
+    num_same_index = new int[num_right_block];
+    position_same_index = new int* [num_right_block];
+    for(int i=0;i<num_right_block;++i)
+        tensor_lattice->ket_tensor_->FindMatrixBlock(num_same_index[i], position_same_index[i], 1, i);
+
+    // expan_table is like mapping_table, which 
+    expan_table = new int* [left_bond];
+    for(int o1=0;o1<left_bond;++o1)
+    {
+        expan_table[o1] = new int[num_left_block];
+        for(int l=0;l<num_left_block;++l)
+            expan_table[o1][l] = -1;
+    }
+
+    min_expan = 1;
+    max_expan = 25;
+    //--------------------------------------------------------------------------------------
+    // exist_flag
+    for(int o2=0;o2<right_bond;++o2)
+    for(int i=0;i<right_contraction_tensor_[o2]->get_num_block();++i)
+    {
+        kdx = right_contraction_tensor_[o2]->left_index_[i];
+        idx = right_contraction_tensor_[o2]->right_index_[i];
+        tmp_tensor[0] = right_contraction_tensor_[o2]->get_matrix_block(i);
+
+        if(tmp_tensor[0]->get_row() == 0) continue;
+        for(int k=0;k<num_same_index[kdx];++k)
+        {
+            jdx = tensor_lattice->ket_tensor_->left_index_[position_same_index[kdx][k]];
+            p2 = tensor_lattice->physics_index_[jdx][kdx];
+            if(tensor_operator->RightCheckZero(o2, p2) == false) continue; //zero
+            for(int o1=0;o1<left_bond;++o1)
+            {
+                ldx = mapping_table[o1][jdx];
+                position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(ldx, idx);
+
+                if(ldx!=-1 && position!=-1)
+                {
+                    p1 = expan_tensor_lattice->physics_index_[ldx][idx];
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
+                    if(element != 0.0) exist_flag[ldx] = true;
+                }
+            }
+        }
+    }
+
+    // num_leigh_block, leigh_block, physics_index
+    num_leigh_block = 0;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+        if(exist_flag[i] != false)
+            num_leigh_block++;
+    leigh_block = new int[num_leigh_block];
+    physics_index = new int* [num_leigh_block];
+    for(int i=0;i<num_leigh_block;++i)
+    {
+        physics_index[i] = new int[expan_tensor_lattice->num_right_block_];
+        for(int j=0;j<expan_tensor_lattice->num_right_block_;++j)
+            physics_index[i][j] = -1;
+    }
+
+    index = 0;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+    {
+        if(exist_flag[i] == true)
+        {
+            leigh_block[index] = expan_tensor_lattice->left_block_[i];
+            for(int j=0;j<expan_tensor_lattice->get_num_right_block();++j)
+            {
+                physics_index[index][j] = expan_tensor_lattice->physics_index_[i][j];
+            }
+            index++;
+        }
+    }
+
+    // expan_table
+    for(int o1=0;o1<left_bond;++o1) for(int l=0;l<num_left_block;++l)
+    {
+        expan_table[o1][l] = -1;
+        ldx = mapping_table[o1][l];
+        if(ldx != -1)
+        {
+            for(int i=0;i<num_leigh_block;++i)
+            {
+                if(expan_tensor_lattice->left_block_[ldx] == leigh_block[i])
+                {
+                    expan_table[o1][l] = i;
+                    break;
+                }
+            }
+        }
+
+    }
+    
+    // re-construct left_dim, right_block, right_dim, physics_index
+    // for expan_lattice
+    delete[] expan_tensor_lattice->left_block_;
+    delete[] expan_tensor_lattice->left_dim_;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i) 
+        delete[] expan_tensor_lattice->physics_index_[i];
+    delete[] expan_tensor_lattice->physics_index_;
+
+    expan_tensor_lattice->num_left_block_ = num_leigh_block;
+    for(int i=0;i<expan_tensor_lattice->get_num_right_block();++i)
+        expan_tensor_lattice->right_dim_[i] = tensor_lattice->right_dim_[i];
+    expan_tensor_lattice->left_block_ = new int[expan_tensor_lattice->num_left_block_];
+    expan_tensor_lattice->left_dim_ = new int[expan_tensor_lattice->num_left_block_];
+    for(int i=0;i<expan_tensor_lattice->num_left_block_;++i)
+    {
+        expan_tensor_lattice->left_block_[i] = leigh_block[i];
+        expan_tensor_lattice->left_dim_[i] = 0;
+    }
+    
+    expan_tensor_lattice->physics_index_ = new int* [expan_tensor_lattice->num_left_block_];
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+    {
+        expan_tensor_lattice->physics_index_[i] = new int[expan_tensor_lattice->num_right_block_];
+        for(int j=0;j<expan_tensor_lattice->get_num_right_block();++j)
+        {
+            expan_tensor_lattice->physics_index_[i][j] = physics_index[i][j];
+        }
+    }
+
+    // re-construct ket_tensor for expan_lattice
+    delete expan_tensor_lattice->ket_tensor_;
+    num_block = 0;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+    for(int j=0;j<expan_tensor_lattice->get_num_right_block();++j)
+    {
+        if(expan_tensor_lattice->physics_index_[i][j] != -1)
+            num_block++;
+    }
+
+    left_index = nullptr;
+    right_index = nullptr;
+    if(num_block != 0)
+    {
+        left_index = new int[num_block];
+        right_index = new int[num_block];
+        index = 0;
+        for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+        for(int j=0;j<expan_tensor_lattice->get_num_right_block();++j)
+        {
+            if(expan_tensor_lattice->physics_index_[i][j] != -1)
+            {
+                left_index[index] = i;
+                right_index[index] = j;
+                index++;
+            }
+        }
+        
+    }
+    expan_tensor_lattice->ket_tensor_ = new RealMatrixBlock(num_block, left_index, right_index);
+
+    delete[] exist_flag;
+    delete[] leigh_block;
+    for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
+        delete[] physics_index[i];
+    delete[] physics_index;
+    delete[] left_index;
+    delete[] right_index;
+
+    //--------------------------------------------------------------------------------------
+    //
+    for(int o2=0;o2<right_bond;++o2)
+    for(int i=0;i<right_contraction_tensor_[o2]->get_num_block();++i)
+    {
+        kdx = right_contraction_tensor_[o2]->left_index_[i];
+        idx = right_contraction_tensor_[o2]->right_index_[i];
+        tmp_tensor[0] = right_contraction_tensor_[o2]->get_matrix_block(i);
+
+        if(tmp_tensor[0]->get_row() == 0) continue;
+        for(int k=0;k<num_same_index[kdx];++k)
+        {
+            jdx = tensor_lattice->ket_tensor_->left_index_[position_same_index[kdx][k]];
+            p2 = tensor_lattice->physics_index_[jdx][kdx];
+            if(tensor_operator->RightCheckZero(o2, p2) == false) continue; //zero
+
+            tmp_tensor[1] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[kdx][k]];
+            
+            // K*R (a_1, b_1)*(b_1, a_0) = (a_1, a_0)
+            first_tensor = tmp_tensor[1]->MultiplyToMatrix(tmp_tensor[0]);
+            first_dim[0] = first_tensor->get_row();
+            first_dim[1] = first_tensor->get_column();
+
+            expan_dim[1] = first_dim[0];
+            expan_dim[0] = (int)(sqrt(first_dim[0]));
+            expan_dim[0] *= tensor_lattice->physics_dim_;
+            expan_dim[0] *= tensor_lattice->physics_dim_;
+            if(expan_dim[0] < min_expan) expan_dim[0] = min_expan;
+            if(expan_dim[0] > max_expan) expan_dim[0] = max_expan;
+
+            tmp_tensor[2] = new RealMatrix(expan_dim[0], expan_dim[1]);
+
+            for(int o1=0;o1<left_bond;++o1)
+            {
+                ldx = expan_table[o1][jdx];
+                position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(ldx, idx);
+
+                if(ldx!=-1 && position!=-1)
+                {
+                    p1 = expan_tensor_lattice->physics_index_[ldx][idx];
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
+                    if(element != 0.0)
+                    {
+                        tmp_tensor[2]->RandomMatrix();
+                        for(int t=0;t<min(expan_dim[0], expan_dim[1]);++t)
+                            tmp_tensor[2]->set_matrix_element(t, t, 0.1*element);
+                        // K*R*W*random_matrix
+                        second_tensor = tmp_tensor[2]->MultiplyToMatrix(first_tensor);
+                        expan_tensor = expan_tensor_lattice->ket_tensor_->matrix_block_[position];
+                        if(expan_tensor->get_row() == 0)
+                            expan_tensor->AddToMatrix(second_tensor);
+                        else 
+                            expan_tensor->ExpanMatrix(0, second_tensor);
+                        delete second_tensor;
+                    }
+                }
+            }
+            delete first_tensor;
+            delete tmp_tensor[2];
+        }
+    }
+    delete[] num_same_index;
+    for(int i=0;i<num_right_block;++i)
+        delete[] position_same_index[i];
+    delete position_same_index;
+
+    for(int i=0;i<left_bond;++i)
+        delete[] expan_table[i];
+    delete[] expan_table;
+
+    //---------------------------------------------------------------------------------------
+    // re-compute left_dim
+    for(int l=0;l<expan_tensor_lattice->get_num_left_block();++l)
+    {
+        expan_tensor_lattice->left_dim_[l] = 0;
+        for(int r=0;r<expan_tensor_lattice->get_num_right_block();++r)
+        {
+            position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(l, r);
+            if(position != -1)
+            {
+                expan_tensor = expan_tensor_lattice->ket_tensor_->matrix_block_[position];
+                expan_dim[0] = expan_tensor->get_row();
+                if(expan_dim[0] > expan_tensor_lattice->left_dim_[l]) 
+                    expan_tensor_lattice->left_dim_[l] = expan_dim[0];
+            }
+        }
+        
+        for(int r=0;r<expan_tensor_lattice->get_num_right_block();++r)
+        {
+            position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(l, r);
+            if(position != -1)
+            {
+                expan_tensor = expan_tensor_lattice->ket_tensor_->matrix_block_[position];
+                if(expan_tensor->get_row() == 0)
+                {
+                    cout << "row of expan_tensor is zero in RightExpanTensorContraction" << endl;
+                    first_tensor = new RealMatrix(expan_tensor_lattice->left_dim_[r], expan_tensor_lattice->right_dim_[r]);
+                    expan_tensor->AddToMatrix(first_tensor);
+                    delete first_tensor;
+                }
+            }
+        }
+    } 
+
+    expan_tensor_lattice->ket_tensor_->MultiplyToScalar(noise_factor);
+}
+
 /*
 //L^{o1, k, l}_{b_0, b_1}          L^{o2, i, j}_{a_0, a_1}
 //                                          
@@ -167,7 +779,7 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
     bool ***zero_flag;
     int *num_same_index, **position_same_index, num_block, *left_index, *right_index;
     int left_bond, right_bond, num_left_block, num_right_block;
-    int p1, p2, idx, jdx, kdx, ldx, index;
+    int p1, p2, idx, jdx, kdx, ldx, index, position;
     double element;
 
     left_bond = tensor_operator->get_left_bond();
@@ -175,13 +787,13 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
     num_left_block = tensor_lattice->get_num_left_block();
     num_right_block = tensor_lattice->get_num_right_block();
     
-    zero_flag = new int** [right_bond];
+    zero_flag = new bool** [right_bond];
     for(int o=0;o<right_bond;++o)
     {
-        zero_flag[o] = new int* [num_right_block];
+        zero_flag[o] = new bool* [num_right_block];
         for(int i=0;i<num_right_block;++i)
         {
-            zero_flag[o][i] = new int[num_right_block];
+            zero_flag[o][i] = new bool[num_right_block];
             for(int j=0;j<num_right_block;++j)
                 zero_flag[o][i][j] = false;
         }
@@ -198,23 +810,23 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
     for(int o1=0;o1<left_bond;++o1)
     for(int i=0;i<left_contraction_tensor_[o1]->get_num_block();++i)
     {
-        kdx = left_contracted_tensor_[o1]->left_index_[i];
-        ldx = left_contracted_tensor_[o1]->right_index_[i];
-        tmp_tensor[0] = left_contracted_tensor_[o1]->get_matrix_block(i);
+        kdx = left_contraction_tensor_[o1]->left_index_[i];
+        ldx = left_contraction_tensor_[o1]->right_index_[i];
+        tmp_tensor[0] = left_contraction_tensor_[o1]->get_matrix_block(i);
 
         if(tmp_tensor[0]->get_row() == 0) continue;
         for(int k=0;k<num_same_index[kdx];++k)
         {
             idx = tensor_lattice->ket_tensor_->right_index_[position_same_index[kdx][k]];
-            p1 = tensor_lattice->ket_tensor_->physics_index_[kdx][idx];
+            p1 = tensor_lattice->physics_index_[kdx][idx];
             if(tensor_operator->LeftCheckZero(o1, p1) == false) continue; //zero
             for(int l=0;l<num_same_index[ldx];++l)
             {
-                jdx = tensor_lattice->ket_tensor_->right_index_[position_same_index[ldx][j]];
-                p2 = tensor_lattice->ket_tensor_->physics_index_[ldx][jdx];
+                jdx = tensor_lattice->ket_tensor_->right_index_[position_same_index[ldx][l]];
+                p2 = tensor_lattice->physics_index_[ldx][jdx];
                 for(int o2=0;o2<right_bond;++o2)
                 {
-                    element = tensor_operator->tensor_operator_[o1][o2]->get_element(p1, p2);
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
                     if(element != 0.0) zero_flag[o2][idx][jdx] = true;
                 }
             }
@@ -237,7 +849,7 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
         if(num_block == 0)
         {
             left_index = nullptr;
-            right_inex = nullptr;
+            right_index = nullptr;
         }
         else
         {
@@ -256,8 +868,8 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
         }
 
         // if right_bond > left_bond?
-        delete tensor_contraction->left_contraction_tensor[o2];
-        tensor_contraction->left_contraction_tensor[o2] = new RealMatrixBlock(num_block, left_index, right_index);
+        delete tensor_contraction->left_contraction_tensor_[o2];
+        tensor_contraction->left_contraction_tensor_[o2] = new RealMatrixBlock(num_block, left_index, right_index);
 
         delete[] left_index;
         delete[] right_index;
@@ -274,15 +886,15 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
     for(int o1=0;o1<left_bond;++o1)
     for(int i=0;i<left_contraction_tensor_[o1]->get_num_block();++i)
     {
-        kdx = left_contracted_tensor_[o1]->left_index_[i];
-        ldx = left_contracted_tensor_[o1]->right_index_[i];
-        tmp_tensor[0] = left_contracted_tensor_[o1]->get_matrix_block(i);
+        kdx = left_contraction_tensor_[o1]->left_index_[i];
+        ldx = left_contraction_tensor_[o1]->right_index_[i];
+        tmp_tensor[0] = left_contraction_tensor_[o1]->get_matrix_block(i);
 
         if(tmp_tensor[0]->get_row() == 0) continue;
         for(int k=0;k<num_same_index[kdx];++k)
         {
             idx = tensor_lattice->ket_tensor_->right_index_[position_same_index[kdx][k]];
-            p1 = tensor_lattice->ket_tensor_->physics_index_[kdx][idx];
+            p1 = tensor_lattice->physics_index_[kdx][idx];
             if(tensor_operator->LeftCheckZero(o1, p1) == false) continue; //zero
             // L*B (b_0, a_0)'*(b_0, b1) = (a_0, b_1)
             tmp_tensor[1] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[kdx][k]];
@@ -292,18 +904,18 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
             for(int l=0;l<num_same_index[ldx];++l)
             {
                 jdx = tensor_lattice->ket_tensor_->right_index_[position_same_index[ldx][l]];
-                p2 = tensor_lattice->ket_tensor_->physics_index_[ldx][jdx];
+                p2 = tensor_lattice->physics_index_[ldx][jdx];
                 // L*B*K (a_0, b_1)*(b_1, a_1) = (a_0, a_1)
                 tmp_tensor[2] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[ldx][l]];
                 second_tensor = first_tensor->MultiplyToMatrix(tmp_tensor[2]);
                 for(int o2=0;o2<right_bond;++o2)
                 {
-                    element = tensor_operator->tensor_operator_[o1][o2]->get_element(p1, p2);
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
                     if(element != 0.0) 
                     {
                         // L*B*K*W
                         second_tensor->MultiplyToScalar(element);
-                        position = tensor_contraction[o2]->FindMatrixBlock(idx, jdx);
+                        position = tensor_contraction->left_contraction_tensor_[o2]->FindMatrixBlock(idx, jdx);
                         // matrix_block == nullptr?
                         tensor_contraction->left_contraction_tensor_[o2]->AddToMatrixBlock(position, second_tensor);
                     }
@@ -344,7 +956,7 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
     bool ***zero_flag;
     int *num_same_index, **position_same_index, num_block, *left_index, *right_index;
     int left_bond, right_bond, num_left_block, num_right_block;
-    int p1, p2, idx, jdx, kdx, ldx, index;
+    int p1, p2, idx, jdx, kdx, ldx, index, position;
     double element;
 
     left_bond = tensor_operator->get_left_bond();
@@ -352,13 +964,13 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
     num_left_block = tensor_lattice->get_num_left_block();
     num_right_block = tensor_lattice->get_num_right_block();
     
-    zero_flag = new int** [left_bond];
+    zero_flag = new bool** [left_bond];
     for(int o=0;o<left_bond;++o)
     {
-        zero_flag[o] = new int* [num_left_block];
+        zero_flag[o] = new bool* [num_left_block];
         for(int j=0;j<num_left_block;++j)
         {
-            zero_flag[o][i] = new int[num_left_block];
+            zero_flag[o][j] = new bool[num_left_block];
             for(int i=0;i<num_left_block;++i)
                 zero_flag[o][j][i] = false;
         }
@@ -375,23 +987,23 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
     for(int o2=0;o2<right_bond;++o2)
     for(int i=0;i<right_contraction_tensor_[o2]->get_num_block();++i)
     {
-        ldx = right_contracted_tensor_[o2]->left_index_[i];
-        kdx = right_contracted_tensor_[o2]->right_index_[i];
-        tmp_tensor[0] = right_contracted_tensor_[o2]->get_matrix_block(i);
+        ldx = right_contraction_tensor_[o2]->left_index_[i];
+        kdx = right_contraction_tensor_[o2]->right_index_[i];
+        tmp_tensor[0] = right_contraction_tensor_[o2]->get_matrix_block(i);
 
         if(tmp_tensor[0]->get_row() == 0) continue;
         for(int l=0;l<num_same_index[ldx];++l)
         {
             jdx = tensor_lattice->ket_tensor_->left_index_[position_same_index[ldx][l]];
-            p2 = tensor_lattice->ket_tensor_->physics_index_[jdx][ldx];
+            p2 = tensor_lattice->physics_index_[jdx][ldx];
             if(tensor_operator->RightCheckZero(o2, p2) == false) continue; //zero
             for(int k=0;k<num_same_index[kdx];++k)
             {
                 idx = tensor_lattice->ket_tensor_->left_index_[position_same_index[kdx][k]];
-                p1 = tensor_lattice->ket_tensor_->physics_index_[idx][kdx];
+                p1 = tensor_lattice->physics_index_[idx][kdx];
                 for(int o1=0;o1<left_bond;++o1)
                 {
-                    element = tensor_operator->tensor_operator_[o1][o2]->get_element(p1, p2);
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
                     if(element != 0.0) zero_flag[o1][jdx][idx] = true;
                 }
             }
@@ -414,7 +1026,7 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
         if(num_block == 0)
         {
             left_index = nullptr;
-            right_inex = nullptr;
+            right_index = nullptr;
         }
         else
         {
@@ -433,8 +1045,8 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
         }
 
         // if left_bond > right_bond?
-        delete tensor_contraction->right_contraction_tensor[o1];
-        tensor_contraction->left_contraction_tensor[o1] = new RealMatrixBlock(num_block, left_index, right_index);
+        delete tensor_contraction->right_contraction_tensor_[o1];
+        tensor_contraction->left_contraction_tensor_[o1] = new RealMatrixBlock(num_block, left_index, right_index);
 
         delete[] left_index;
         delete[] right_index;
@@ -451,15 +1063,15 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
     for(int o2=0;o2<right_bond;++o2)
     for(int i=0;i<right_contraction_tensor_[o2]->get_num_block();++i)
     {
-        ldx = right_contracted_tensor_[o2]->left_index_[i];
-        kdx = right_contracted_tensor_[o2]->right_index_[i];
-        tmp_tensor[0] = right_contracted_tensor_[o2]->get_matrix_block(i);
+        ldx = right_contraction_tensor_[o2]->left_index_[i];
+        kdx = right_contraction_tensor_[o2]->right_index_[i];
+        tmp_tensor[0] = right_contraction_tensor_[o2]->get_matrix_block(i);
 
         if(tmp_tensor[0]->get_row() == 0) continue;
         for(int l=0;l<num_same_index[ldx];++l)
         {
             jdx = tensor_lattice->ket_tensor_->left_index_[position_same_index[ldx][l]];
-            p2 = tensor_lattice->ket_tensor_->physics_index_[jdx][ldx];
+            p2 = tensor_lattice->physics_index_[jdx][ldx];
             if(tensor_operator->RightCheckZero(o2, p2) == false) continue; //zero
             // K*R (a_1, b_1)*(b_1, b_0) = (a_1, b_0)
             tmp_tensor[1] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[ldx][l]];
@@ -467,7 +1079,7 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
             for(int k=0;k<num_same_index[kdx];++k)
             {
                 idx = tensor_lattice->ket_tensor_->left_index_[position_same_index[kdx][k]];
-                p1 = tensor_lattice->ket_tensor_->physics_index_[idx][kdx];
+                p1 = tensor_lattice->physics_index_[idx][kdx];
                 // K*R*B (a_1, b_0)*(a_0, b_0)' = (a_1, a_0)
                 tmp_tensor[2] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[kdx][k]];
                 bra_tensor = tmp_tensor[2]->TransposeMatrix();
@@ -475,12 +1087,12 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
                 delete bra_tensor;
                 for(int o1=0;o1<left_bond;++o1)
                 {
-                    element = tensor_operator->tensor_operator_[o1][o2]->get_element(p1, p2);
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
                     if(element != 0.0) 
                     {
                         // K*R*B*W
                         second_tensor->MultiplyToScalar(element);
-                        position = tensor_contraction[o1]->FindMatrixBlock(jdx, idx);
+                        position = tensor_contraction->right_contraction_tensor_[o1]->FindMatrixBlock(jdx, idx);
                         // if matrix is nullptr, replace it
                         tensor_contraction->right_contraction_tensor_[o1]->AddToMatrixBlock(position, second_tensor);
                     }
@@ -512,11 +1124,12 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
 //                 k,a_1     l,b_1          
 //                        
 */
-void RealTensorContraction::ComputeEffectHamilton(TensorLattice* tensor_lattice, 
-        TensorOperator* tensor_operator, double* hamilton)
+void RealTensorContraction::ComputeEffectHamilton(RealTensorLattice* tensor_lattice, 
+        RealTensorOperator* tensor_operator, double* hamilton)
 {
     RealMatrix *inv_tensor, *result_tensor, *tmp_tensor[2];
     double element, *matrix_element;
+    int left_bond, right_bond, num_left_block, num_right_block;
     int vector_dim, position[2], result_dim[2], part_dim[2];
     int p1, p2, idx, jdx, kdx, ldx;
 
@@ -545,8 +1158,8 @@ void RealTensorContraction::ComputeEffectHamilton(TensorLattice* tensor_lattice,
             if(tmp_tensor[1]->get_row() == 0) continue;
             
             // if exit (p1,i,j) and (p2,k,l)
-            position[0] = tensor_lattice->FindMatrixBlock(idx, jdx);
-            position[1] = tensor_lattice->FindMatrixBlock(kdx, ldx);
+            position[0] = tensor_lattice->ket_tensor_->FindMatrixBlock(idx, jdx);
+            position[1] = tensor_lattice->ket_tensor_->FindMatrixBlock(kdx, ldx);
 
             if(position[0]!=-1 && position[1]!=-1)
             {
@@ -561,7 +1174,7 @@ void RealTensorContraction::ComputeEffectHamilton(TensorLattice* tensor_lattice,
 
                     if(result_tensor != nullptr)
                     {
-                        result_tensor->MultiplyToScale(element);
+                        result_tensor->MultiplyToScalar(element);
 
                         matrix_element = result_tensor->get_matrix_element();
                         
@@ -603,8 +1216,9 @@ void RealTensorContraction::ComputeEffectHamilton(TensorLattice* tensor_lattice,
 void RealTensorContraction::MultiplyEffectHamilton(RealTensorLattice* tensor_lattice, 
         RealTensorOperator* tensor_operator, double* state)
 {
-    RealMatrix *first_matrix, *second_matrix, tmp_tensor[3];
+    RealMatrix *first_tensor, *second_tensor, *tmp_tensor[3];
     double *matrix_element, element;
+    int left_bond, right_bond, num_left_block, num_right_block;
     int *num_same_index, **position_same_index, part_dim, position, total_element_num, p1, p2, idx, jdx, ldx, kdx;
 
 
@@ -623,35 +1237,35 @@ void RealTensorContraction::MultiplyEffectHamilton(RealTensorLattice* tensor_lat
     for(int o2=0;o2<right_bond;++o2)
     for(int i=0;i<right_contraction_tensor_[o2]->get_num_block();++i)
     {
-        ldx = right_contracted_tensor_[o2]->left_index_[i];
-        jdx = right_contracted_tensor_[o2]->right_index_[i];
-        tmp_tensor[0] = right_contracted_tensor_[o2]->get_matrix_block(i);
+        ldx = right_contraction_tensor_[o2]->left_index_[i];
+        jdx = right_contraction_tensor_[o2]->right_index_[i];
+        tmp_tensor[0] = right_contraction_tensor_[o2]->get_matrix_block(i);
 
         if(tmp_tensor[0]->get_row() == 0) continue;
         for(int l=0;l<num_same_index[ldx];++l)
         {
             kdx = tensor_lattice->ket_tensor_->left_index_[position_same_index[ldx][l]];
-            p2 = tensor_lattice->ket_tensor_->physics_index_[kdx][ldx];
+            p2 = tensor_lattice->physics_index_[kdx][ldx];
             if(tensor_operator->RightCheckZero(o2, p2) == false) continue; //zero
             // K*R (a_1, b_1)*(b_1, b_0) = (a_1, b_0)
             tmp_tensor[1] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[ldx][l]];
             first_tensor = tmp_tensor[1]->MultiplyToMatrix(tmp_tensor[0]);
             for(int j=0;j<num_same_index[jdx];++j)
             {
-                idx = tensor_lattice->ket_tensor_->left_index_[position_same_index[jdx][k]];
-                p1 = tensor_lattice->ket_tensor_->physics_index_[idx][jdx];
-                part_dim = tensor_lattice->ComputePartKetTensorDim(position_same_index[jdx][k])
+                idx = tensor_lattice->ket_tensor_->left_index_[position_same_index[jdx][j]];
+                p1 = tensor_lattice->physics_index_[idx][jdx];
+                part_dim = tensor_lattice->ComputePartKetTensorDim(position_same_index[jdx][j]);
                 for(int o1=0;o1<left_bond;++o1)
                 {
-                    element = tensor_operator->tensor_operator_[o1][o2]->get_element(p1, p2);
+                    element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
                     if(element != 0.0) 
                     {
-                        position = tensor_contraction[o1]->FindMatrixBlock(idx, kdx);
+                        position = left_contraction_tensor_[o1]->FindMatrixBlock(idx, kdx);
                         if(position != -1)
                         {
-                            tmp_tensor[2] = left_contraction_tensor[o1]->matrix_block_[position];
+                            tmp_tensor[2] = left_contraction_tensor_[o1]->matrix_block_[position];
                             second_tensor = tmp_tensor[2]->MultiplyToMatrix(first_tensor);
-                            second_tensor->MultiplyToScale(element);
+                            second_tensor->MultiplyToScalar(element);
                             matrix_element = second_tensor->get_matrix_element();
                             total_element_num = second_tensor->get_total_element_num();
                             for(int a=0;a<total_element_num;++a) state[part_dim+a] = matrix_element[a];

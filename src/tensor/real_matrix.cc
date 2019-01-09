@@ -275,6 +275,32 @@ RealMatrix* RealMatrix::MultiplyToMatrix(RealMatrix* tmp_matrix)
     return result_matrix;
 }
 
+RealMatrix* RealMatrix::MatrixKronProduct(RealMatrix* tmp_matrix_1, RealMatrix* tmp_matrix_2)
+{
+    RealMatrix* tmp_matrix;
+    int row, column, position[2];
+    double element[2];
+    
+    row = tmp_matrix_1->get_row()*tmp_matrix_2->get_row();
+    column = tmp_matrix_1->get_column()*tmp_matrix_2->get_column();
+    if(row==0 || column==0) return nullptr;
+    tmp_matrix = new RealMatrix(row, column);
+    
+    for(int i1=0;i1<tmp_matrix_1->get_row();++i1) for(int j1=0;j1<tmp_matrix_1->get_column();++j1)
+    {
+        element[0] = tmp_matrix_1->get_matrix_element(i1,j1);
+        for(int i2=0;i2<tmp_matrix_2->get_row();++i2) for(int j2=0;j2<tmp_matrix_2->get_column();++j2)
+        {
+            position[0] = i2+i1*tmp_matrix_2->get_row();
+            position[1] = j2+j1*tmp_matrix_2->get_column();
+            element[1] = tmp_matrix_2->get_matrix_element(i2,j2);
+            tmp_matrix->set_matrix_element(position[0], position[1], element[0]*element[1]);
+        }
+
+    }
+    return tmp_matrix;
+}
+
 void RealMatrix::MatrixElementProduct(RealMatrix* tmp_matrix)
 {
     if(row_ != tmp_matrix->row_ || column_ != tmp_matrix->column_)

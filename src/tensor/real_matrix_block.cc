@@ -292,9 +292,22 @@ void RealMatrixBlock::ResetMatrixBlock()
 
 void RealMatrixBlock::AddToMatrixBlock(int position, RealMatrix* tmp_matrix)
 {
-    if(matrix_block_ != 0)
+    if(matrix_block_ != nullptr)
     {
         matrix_block_[position]->AddToMatrix(tmp_matrix);
+    }
+}
+
+void RealMatrixBlock::MultiplyToScalar(double scalar)
+{
+    for(int i=0;i<num_block_;++i)
+    {
+        if(matrix_block_[i] == nullptr)
+        {
+            cout << "nullptr*scalar in RealMatrixBlock::MultiplyScalar" << endl;
+            exit(-1);
+        }
+        matrix_block_[i]->MultiplyToScalar(scalar);
     }
 }
 

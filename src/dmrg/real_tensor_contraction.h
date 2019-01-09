@@ -2,6 +2,8 @@
 #define DMRGCC_DMRG_REAL_TENSOR_CONTRACTION_H_
 
 #include "tensor/real_matrix_block.h"
+#include "dmrg/real_tensor_lattice.h"
+#include "dmrg/real_tensor_operator.h"
 
 class RealTensorContraction
 {
@@ -86,7 +88,7 @@ class RealTensorContraction
 
     //
     //
-    void ComputeMutiplyEffectHamilton(RealTensorLattice* tensor_lattice, RealTensorOperator* tensor_operator, 
+    void MultiplyEffectHamilton(RealTensorLattice* tensor_lattice, RealTensorOperator* tensor_operator, 
             double* state);
 };
 

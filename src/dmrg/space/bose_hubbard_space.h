@@ -32,7 +32,8 @@ class BoseHubbardSpace : public RealTensorSpace
 
     //
     //
-    void MergeQuantumTable();
+    void MergeQuantumTable(int* merge_quantum_table, int* operator_quantum_table, 
+            int* space_quantum_table);
 
     //
     //

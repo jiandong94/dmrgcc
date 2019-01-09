@@ -5,26 +5,26 @@ RealTensorHamiltonian::~RealTensorHamiltonian()
     for(int i=0;i<num_site_pp_;++i)
     {
         for(int j=0;j<num_table_[i];++j) delete[] quantum_table_[i][j];
-        delete[] quantum_table_[i]
+        delete[] quantum_table_[i];
     }
     delete[] quantum_table_;
     delete[] num_table_;
 
     for(int i=0;i<num_operator_;++i)
         delete basic_operator_[i];
-    delete[] basic_operator;
+    delete[] basic_operator_;
     
     for(int i=0;i<num_site_;++i)
         delete tensor_hamiltonian_[i];
     delete[] tensor_hamiltonian_;
 }
 
-RealTensorOperator* RealTensorHamiltonian::get_tensor_hamiltonian(site)
+RealTensorOperator* RealTensorHamiltonian::get_tensor_hamiltonian(int site)
 {
     return tensor_hamiltonian_[site];
 }
 
-void RealTensorHamiltonian::PrintHamiltonian()
+void RealTensorHamiltonian::PrintTensorHamiltonian()
 {
     cout << "==============================" << endl;
     cout << "TensorHamiltonian" << endl;
@@ -39,7 +39,7 @@ void RealTensorHamiltonian::WriteTensorHamiltonian(const char* tensor_hamiltonia
 {
     ofstream tensor_hamiltonian_file;
 
-    tenosr_hamiltonian_file.open(tensor_hamiltonian_name, ios::binary|ios::out);
+    tensor_hamiltonian_file.open(tensor_hamiltonian_name, ios::binary|ios::out);
 
     WriteTensorHamiltonian(tensor_hamiltonian_file);
 
@@ -59,21 +59,21 @@ void RealTensorHamiltonian::WriteTensorHamiltonian(ofstream &tensor_hamiltonian_
 
     tensor_hamiltonian_file.write((char*) &num_quantum_, sizeof(int));
     for(int i=0;i<num_site_pp_;++i)
-        tensor_hamiltonian_file.write((char*) &num_table_[i]_, sizeof(int));
+        tensor_hamiltonian_file.write((char*) &num_table_[i], sizeof(int));
     for(int i=0;i<num_site_pp_;++i)
         for(int j=0;j<num_table_[i];++j)
             for(int k=0;k<num_quantum_;++k)
-                tensor_hamiltonian_file.write((char*) &quantum_table_[i][j][k]_, sizeof(int));
+                tensor_hamiltonian_file.write((char*) &quantum_table_[i][j][k], sizeof(int));
 
     for(int i=0;i<num_site_;++i)
-        tensor_hamiltonian_[i]->WriteTensorOperator[tensor_hamiltonian_file];
+        tensor_hamiltonian_[i]->WriteTensorOperator(tensor_hamiltonian_file);
 }
 
 void RealTensorHamiltonian::ReadTensorHamiltonian(const char* tensor_hamiltonian_name)
 {
     ifstream tensor_hamiltonian_file;
 
-    tenosr_hamiltonian_file.open(tensor_hamiltonian_name, ios::binary|ios::in);
+    tensor_hamiltonian_file.open(tensor_hamiltonian_name, ios::binary|ios::in);
 
     ReadTensorHamiltonian(tensor_hamiltonian_file);
 
@@ -85,14 +85,14 @@ void RealTensorHamiltonian::ReadTensorHamiltonian(ifstream &tensor_hamiltonian_f
     for(int i=0;i<num_site_pp_;++i)
     {
         for(int j=0;j<num_table_[i];++j) delete[] quantum_table_[i][j];
-        delete[] quantum_table_[i]
+        delete[] quantum_table_[i];
     }
     delete[] quantum_table_;
     delete[] num_table_;
 
     for(int i=0;i<num_operator_;++i)
         delete basic_operator_[i];
-    delete[] basic_operator;
+    delete[] basic_operator_;
     
     for(int i=0;i<num_site_;++i)
         delete tensor_hamiltonian_[i];
@@ -124,16 +124,16 @@ void RealTensorHamiltonian::ReadTensorHamiltonian(ifstream &tensor_hamiltonian_f
     }
 }
 
-void ExpanTensorHamiltonian(int site, int expan_operator_index, int expan_coefficient, 
+void RealTensorHamiltonian::ExpanTensorHamiltonian(int site, int expan_operator_index, int expan_coefficient, 
         int* expan_table)
 {
     int expan_num_table, **expan_quantum_table;
-    leigh = -1;
+    int leigh = -1;
     if(site == 0) leigh = 0;
     if(site == num_site_mm_) leigh = 1;
 
     // expan tensor operator
-    tensor_hamiltonian[site]->ExpanTensorOperator(basic_tensor_, leigh, 
+    tensor_hamiltonian_[site]->ExpanTensorOperator(basic_operator_, leigh, 
             expan_operator_index, expan_coefficient);
 
     // expan quantum table
@@ -141,15 +141,15 @@ void ExpanTensorHamiltonian(int site, int expan_operator_index, int expan_coeffi
     {
         expan_num_table = num_table_[site+1]+1;
         expan_quantum_table = new int* [expan_num_table];
-        for(int i=0;i<expan_num_table)
+        for(int i=0;i<expan_num_table;++i)
             expan_quantum_table[i] = new int[num_quantum_];
         for(int j=0;j<num_quantum_;++j)
         {
             for(int i=0;i<num_table_[site+1];++i)
             {  
-                expan_quantum_table[i][j] = quantum_table[site+1][i][j];
+                expan_quantum_table[i][j] = quantum_table_[site+1][i][j];
             }
-            expan_quantum_table[num_table[site+1]][j] = expan_table[j];
+            expan_quantum_table[num_table_[site+1]][j] = expan_table[j];
         }
 
         for(int i=0;i<num_table_[site+1];++i) delete[] quantum_table_[site+1][i];

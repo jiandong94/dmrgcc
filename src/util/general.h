@@ -58,6 +58,19 @@ inline double GetWallTime()
     return (double)time.tv_sec + (double)time.tv_usec*0.000001;
 }
 
+inline bool CompareQuantumTable(int num_quantum, int* quantum_table1, int* quantum_table2)
+{
+    bool result = true;
+    for(int i=0;i<num_quantum;++i)
+    {
+        if(quantum_table1[i] != quantum_table2[i])
+        {
+            result = false;
+            break;
+        }
+    }
+    return result;
+}
 
 #endif // UTIL_GENERAL_H_
 

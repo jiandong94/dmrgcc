@@ -103,6 +103,10 @@ class RealMatrixBlock
     //
     void AddToMatrixBlock(int position, RealMatrix* tmp_matrix);
 
+    //
+    //
+    void MultiplyToScalar(double scalar);
+
     // return position
     //
     int FindMatrixBlock(int left, int right);

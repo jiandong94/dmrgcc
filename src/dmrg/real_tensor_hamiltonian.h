@@ -5,6 +5,7 @@
 
 class RealTensorHamiltonian
 {
+    friend class RealTensorContraction;
     protected:
 
     int num_site_;
@@ -41,7 +42,7 @@ class RealTensorHamiltonian
 
     //
     //
-    void WriteTensorHamiltonian(ofstream tensor_hamiltonian_file);
+    void WriteTensorHamiltonian(ofstream &tensor_hamiltonian_file);
 
     //
     //
@@ -49,7 +50,7 @@ class RealTensorHamiltonian
 
     //
     //
-    void ReadTensorHamiltonian(ifstream tensor_hamiltonian_file);
+    void ReadTensorHamiltonian(ifstream &tensor_hamiltonian_file);
 
     //
     //

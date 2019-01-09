@@ -62,8 +62,11 @@ void BoseHubbardSpace::DefineQuantumTable()
 
 }
 
-void BoseHubbardSpace::MergeQuantumTable()
-{}
+void BoseHubbardSpace::MergeQuantumTable(int* merge_quantum_table, int* operator_quantum_table, 
+        int* space_quantum_table)
+{
+    merge_quantum_table[0] = operator_quantum_table[0] + space_quantum_table[0];
+}
 
 int BoseHubbardSpace::CheckQuantumTable(int site, int* left_table, int* right_table)
 {
