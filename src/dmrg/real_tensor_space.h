@@ -5,6 +5,7 @@
 
 class RealTensorSpace
 {
+    friend class RealTensorNetwork;
     protected:
 
     // disk cache
@@ -41,6 +42,16 @@ class RealTensorSpace
     // destructor
     //
     virtual ~RealTensorSpace();
+
+    bool get_disk_cache();
+
+    char* get_cache_name();
+
+    int get_num_site();
+
+    int get_num_site_pp();
+
+    int get_num_site_mm();
 
     // 
     //

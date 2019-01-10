@@ -1,12 +1,12 @@
 #include "dmrg/space/bose_hubbard_space.h"
 
-BoseHubbardSpace::BoseHubbardSpace(int num_site_x, int num_site_y, int num_boson, int num_level)
+BoseHubbardSpace::BoseHubbardSpace(int num_site_x, int num_site_y, int num_boson, int physics_dim)
 {
     // derive class member
     num_site_x_ = num_site_x;
     num_site_y_ = num_site_y;
     num_boson_ = num_boson;
-    num_level_ = num_level;
+    physics_dim_ = physics_dim;
     
     // base class member
     disk_cache_ = false;
@@ -15,7 +15,7 @@ BoseHubbardSpace::BoseHubbardSpace(int num_site_x, int num_site_y, int num_boson
     num_site_mm_ = num_site_x_*num_site_y_-1;
     tensor_lattice_ = new RealTensorLattice* [num_site_];
     for(int i=0;i<num_site_;++i)
-        tensor_lattice_[i] = new RealTensorLattice(num_level_);
+        tensor_lattice_[i] = new RealTensorLattice(physcis_dim_);
     DefineQuantumTable();
 }
 
@@ -43,8 +43,8 @@ void BoseHubbardSpace::DefineQuantumTable()
         else
         {
             min_from_left = 0;
-            max_from_left = (num_level_-1)*i;
-            min_from_right = num_boson_-(num_site_-i)*(num_level_-1);
+            max_from_left = (physics_dim_-1)*i;
+            min_from_right = num_boson_-(num_site_-i)*(physics_dim_-1);
             max_from_right = num_boson_;
             min_final = max(min_from_left, min_from_right);
             max_final = min(max_from_left, max_from_right);
@@ -72,7 +72,7 @@ int BoseHubbardSpace::CheckQuantumTable(int site, int* left_table, int* right_ta
 {
     int info = -1;
 
-    for(int i=0;i<num_level_;++i)
+    for(int i=0;i<physics_dim_;++i)
     {
         if(left_table[0]+i == right_table[0])
         {

@@ -20,6 +20,31 @@ RealTensorSpace::~RealTensorSpace()
     delete[] tensor_lattice_;
 }
 
+bool RealTensorSpace::get_disk_cache()
+{
+    return disk_cache_;
+}
+
+char* RealTensorSpace::get_cache_name()
+{
+    return cache_name_;
+}
+
+int RealTensorSpace::get_num_site()
+{
+    return num_site_;
+}
+
+int RealTensorSpace::get_num_site_pp()
+{
+    return num_site_pp_;
+}
+
+int RealTensorSpace::get_num_site_mm()
+{
+    return num_site_mm_;
+}
+
 RealTensorLattice* RealTensorSpace::get_tensor_lattice(int site)
 {
     return tensor_lattice_[site];

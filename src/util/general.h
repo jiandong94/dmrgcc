@@ -15,11 +15,15 @@
 #define min(a,b) ((a)>(b)?(b):(a))
 #define max(a,b) ((a)<(b)?(b):(a))
 
+#define PI 3.14159265358979323846
+
 using std::ios;
 using std::cout;
 using std::endl;
 using std::ofstream;
 using std::ifstream;
+using std::istream;
+using std::string;
 
 // Computes a matrix-matrix product with general matrices.
 // C := alpha*op(A)*op(B) + beta*C.
@@ -49,6 +53,13 @@ void QuickSort(T* array, int* index, int left, int right, int flag=0);
 
 void ReorderRelevantArray(int num_quantum, int num_table, int** quantum_table, 
         int* index);
+
+inline void error(const string& s)
+{
+    cout << endl << s << endl;
+    cout.flush();
+    exit(-1);
+}
 
 inline double GetWallTime()
 {

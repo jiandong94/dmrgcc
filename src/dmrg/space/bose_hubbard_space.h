@@ -12,7 +12,7 @@ class BoseHubbardSpace : public RealTensorSpace
 
     int num_boson_;
 
-    int num_level_;
+    int physics_dim_;
 
     public:
 

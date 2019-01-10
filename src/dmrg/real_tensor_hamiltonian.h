@@ -6,6 +6,7 @@
 class RealTensorHamiltonian
 {
     friend class RealTensorContraction;
+    friend class RealTensorNetwork;
     protected:
 
     int num_site_;
