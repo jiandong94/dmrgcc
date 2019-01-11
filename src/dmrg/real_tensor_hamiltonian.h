@@ -60,13 +60,21 @@ class RealTensorHamiltonian
 
     //
     //
+    void ParallelTensorHamiltonian();
+
+    //
+    //
     virtual void DefineTensorHamiltonian();
 
     protected:
 
     //
     //
-    void DefineQuantumTable();
+    void DefineQuantumTable(num_quantum);
+
+    //
+    //
+    void ParallelQuantumTable(int site, int num_unparallel, int* position_unparallel);
 };
 
 

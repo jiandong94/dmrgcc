@@ -146,9 +146,11 @@ void RealTensorHamiltonian::ExpanTensorHamiltonian(int site, int expan_operator_
         for(int j=0;j<num_quantum_;++j)
         {
             for(int i=0;i<num_table_[site+1];++i)
-            {  
+            { 
+                // pervious quantum table
                 expan_quantum_table[i][j] = quantum_table_[site+1][i][j];
             }
+            // previous quantum table + expaned quantum_table
             expan_quantum_table[num_table_[site+1]][j] = expan_table[j];
         }
 
@@ -158,4 +160,66 @@ void RealTensorHamiltonian::ExpanTensorHamiltonian(int site, int expan_operator_
         num_table_[site+1] = expan_num_table;
         quantum_table_[site+1] = expan_quantum_table;
     }
+}
+
+void ParallelTensorHamiltonian()
+{
+    RealMatrix* transfer_tensor;
+    int num_unparallel, *position_unparallel;
+
+    for(int i=0;i<num_site_mm_;++i)
+    {
+        tensor_hamiltonian_[i]->LeftParallelTensorOperator(num_unparallel, position_unparallel, 
+                                                           transfer_tensor);
+        tensor_hamiltonian_[i+1]->LeftMergeTensorOperator(num_unparallel, transfer_tensor);
+        ParallelQuantumTable(i+1, num_unparallel, position_unparallel);
+
+        delete[] position_unparallel;
+        delete transfer_tensor;
+    }
+    for(int i=num_site_mm_;i>0;--i)
+    {
+        tensor_hamiltonian_[i]->RightParallelTensorOperator(num_unparallel, position_unparallel, 
+                                                           transfer_tensor);
+        tensor_hamiltonian_[i-1]->RightMergeTensorOperator(num_unparallel, transfer_tensor);
+        ParallelQuantumTable(i, num_unparallel, position_unparallel);
+
+        delete[] position_unparallel;
+        delete transfer_tensor;
+    }
+}
+
+void RealTensorHamiltonian::DefineQuantumTable(int num_quantum)
+{
+    num_quantum_ = num_quantum;
+    num_table_ = new int[num_site_pp_];
+    quantum_table_ = new int** [num_site_pp_];
+    for(int i=0;i<num_site_pp_;++i)
+    {
+        num_table_[i] = 0;
+        quantum_table_[i] = nullptr;
+    }
+}
+
+void RealTensorHamiltonian::ParallelQuantumTable(int site, int num_unparallel, 
+        int* position_unparallel)
+{
+    int **result_quantum_table;
+
+    result_quantum_table = new int* [num_unparallel];
+    for(int i=0;i<num_unparallel;++i)
+    {
+        result_quantum_table = new int[num_quantum_];
+        for(int j=0;j<num_quantum_;++j)
+        {
+            result_quantum_table[i][j] = quantum_table_[site][position_unparallel[i]][j]
+        }
+    }
+
+    for(int i=0;i<num_table_[site];++i)
+        delete[] quantum_table_[site][i];
+    delete[] quantum_table_[site];
+
+    num_table_[site] = num_unparallel;
+    quantum_table_[site] = result_quantum_table;
 }

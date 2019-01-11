@@ -142,6 +142,11 @@ class RealMatrix
     // replace matrix(copy matrix)
     //
     void ReplaceMatrix(RealMatrix* tmp_matrix);
+    
+    // deparallelisation algorithm
+    //
+    void ParallelMatrix(int leigh, int &num_unparallel, int* &position_unparallel, 
+            RealMatrix* &transfer_tensor);
 
     // expan matrix
     // if flag = 0, expan the matrix to (row_+row, column_). 

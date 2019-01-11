@@ -83,5 +83,40 @@ inline bool CompareQuantumTable(int num_quantum, int* quantum_table1, int* quant
     return result;
 }
 
+inline void isParallelElement(double* element, int position, int& info, double& prefactor,
+                              bool& zero)
+{
+    double factor;
+    if(fabs(element[1]) <= 1E-10)
+    {
+        if(fabs(element[0]) > 1E-10)
+        {
+            info = -1;
+            prefactor = 1.0;
+        }
+    }
+    else
+    {
+        factor = element[0]/element[1];
+        if(zero == true)
+        {
+            info = position;
+            prefactor = factor;
+            zero = false;
+        }
+        else if(zero == false)
+        {
+            if(fabs(factor-prefactor) > 1E-8)
+            {
+                info = -1;
+                prefactor = 1.0;
+            }
+        }
+    }
+}
+
+
+
+
 #endif // UTIL_GENERAL_H_
 

@@ -196,6 +196,170 @@ void RealTensorOperator::ExpanTensorOperator(RealMatrix** basic_operator, int le
     tensor_operator_ = expan_tensor_operator;
 }
 
+void RealTensorOperator::LeftParallelTensorOperator(int &num_unparallel, int* &position_unparallel, 
+        RealMatrix* &transfer_tensor)
+{
+    RealMatrix* reshape_tensor;
+    double element;
+    int reshape_row, reshape_column, reshape_position;
+
+    reshape_row = left_bond_ * physics_dim_ * physics_dim_;
+    reshape_column = right_bond_;
+    reshape_tensor = new RealMatrix(reshape_row, reshape_column);
+
+    // reshape_row (p2,p1,l)
+    for(int l=0;l<left_bond_;++l) for(int r=0;r<right_bond_;++r)
+    for(int p1=0;p1<physics_dim_;++p1) for(int p2=0;p2<physics_dim_;++p2)
+    {   
+        // row first
+        reshape_position = p2+(p1+l*physics_dim_)*physics_dim_;
+        element = tensor_operator_[l][r]->get_matrix_element(p1, p2);
+        reshape_tensor->set_matrix_element(reshape_position, r, element);
+    }
+
+    reshape_tensor->ParallelMatrix(0, num_unparallel, position_unparallel, transfer_tensor);
+
+    ResetTensorOperator();
+    right_bond_ = num_unparallel;
+    DefineTensorOperator();
+
+    for(int l=0;l<left_bond_;++l) for(int r=0;r<right_bond_;++r)
+    for(int p1=0;p1<physics_dim_;++p1) for(int p2=0;p2<physics_dim_;++p2)
+    {   
+        // row first
+        reshape_position = p2+(p1+l*physics_dim_)*physics_dim_;
+        element = reshape_tensor->get_matrix_element(reshape_position, position_unparallel[r]);
+        tensor_operator_[l][r]->set_matrix_element(p1, p2, element);
+    }
+
+    delete reshape_tensor;
+}
+
+void RealTensorOperator::RightParallelTensorOperator(int &num_unparallel, int* &position_unparallel, 
+        RealMatrix* &transfer_tensor)
+{
+    RealMatrix* reshape_tensor;
+    double element;
+    int reshape_row, reshape_column, reshape_position;
+
+    reshape_row = left_bond_;
+    reshape_column = right_bond_ * physics_dim_ * physics_dim_;
+    reshape_tensor = new RealMatrix(reshape_row, reshape_column);
+
+    // reshape_row (p2,p1,r)
+    for(int l=0;l<left_bond_;++l) for(int r=0;r<right_bond_;++r)
+    for(int p1=0;p1<physics_dim_;++p1) for(int p2=0;p2<physics_dim_;++p2)
+    {   
+        // row first
+        reshape_position = p2+(p1+l*physics_dim_)*physics_dim_;
+        element = tensor_operator_[l][r]->get_matrix_element(p1, p2);
+        reshape_tensor->set_matrix_element(l, reshape_position, element);
+    }
+
+    reshape_tensor->ParallelMatrix(1, num_unparallel, position_unparallel, transfer_tensor);
+
+    ResetTensorOperator();
+    left_bond_ = num_unparallel;
+    DefineTensorOperator();
+
+    for(int l=0;l<left_bond_;++l) for(int r=0;r<right_bond_;++r)
+    for(int p1=0;p1<physics_dim_;++p1) for(int p2=0;p2<physics_dim_;++p2)
+    {   
+        // row first
+        reshape_position = p2+(p1+l*physics_dim_)*physics_dim_;
+        element = reshape_tensor->get_matrix_element(position_unparallel[l], reshape_position);
+        tensor_operator_[l][r]->set_matrix_element(p1, p2, element);
+    }
+
+    delete reshape_tensor;
+}
+
+void RealTensorOperator::LeftMergeTensorOperator(int num_unparallel, RealMatrix* transfer_tensor)
+{
+    RealMatrix ***result_tensor_operator;
+    double element, factor[2];
+    int merge_dim;
+
+    merge_dim = transfer_tensor->get_column();
+    if(merge_dim != left_bond_)
+    {
+        error("merge dimension is not match in LeftMergeTensorOperator");
+    }
+
+    result_tensor_operator = new RealMatrix** [num_unparallel];
+    for(int l=0;l<num_unparallel;++l)
+    {
+        result_tensor_operator[l] = new RealMatrix*[right_bond_];
+        for(int r=0;r<right_bond_;++r)
+            result_tensor_operator[l][r] = new RealMatrix(physics_dim_, physics_dim_);
+    }
+
+    //      |
+    // --M--O--
+    //      |
+    for(int l=0;l<num_unparallel;++l) for(int r=0;r<right_bond_;++r)
+    for(int p1=0;p1<physics_dim_;++p1) for(int p2=0;p2<physics_dim_;++p2)
+    {
+        element = 0.0;
+        
+        for(int m=0;m<merge_dim;++m)
+        {
+            factor[0] = transfer_tensor->get_matrix_element(l, m);
+            factor[1] = tensor_operator_[m][r]->get_matrix_element(p1, p2);
+            element += factor[0]*factor[1];
+        }
+
+        result_tensor_operator[l][r]->set_matrix_element(p1, p2, element);
+    }
+    
+    ResetTensorOperator();
+    left_bond_ = num_unparallel;
+    tensor_operator_ = result_tensor_operator;
+}
+
+void RealTensorOperator::RightMergeTensorOperator(int num_unparallel, RealMatrix* transfer_tensor)
+{
+    RealMatrix ***result_tensor_operator;
+    double element, factor[2];
+    int merge_dim;
+
+    merge_dim = transfer_tensor->get_row();
+    if(merge_dim != right_bond_)
+    {
+        error("merge dimension is not match in RightMergeTensorOperator");
+    }
+
+    result_tensor_operator = new RealMatrix** [left_bond_];
+    for(int l=0;l<left_bond_;++l)
+    {
+        result_tensor_operator[l] = new RealMatrix*[num_unparallel];
+        for(int r=0;r<num_unparallel;++r)
+            result_tensor_operator[l][r] = new RealMatrix(physics_dim_, physics_dim_);
+    }
+
+    //   |
+    // --O--M--
+    //   |
+    for(int l=0;l<left_bond_;++l) for(int r=0;r<num_unparallel;++r)
+    for(int p1=0;p1<physics_dim_;++p1) for(int p2=0;p2<physics_dim_;++p2)
+    {
+        element = 0.0;
+        
+        for(int m=0;m<merge_dim;++m)
+        {
+            factor[0] = transfer_tensor->get_matrix_element(m, r);
+            factor[1] = tensor_operator_[l][m]->get_matrix_element(p1, p2);
+            element += factor[0]*factor[1];
+        }
+
+        result_tensor_operator[l][r]->set_matrix_element(p1, p2, element);
+    }
+    
+    ResetTensorOperator();
+    right_bond_ = num_unparallel;
+    tensor_operator_ = result_tensor_operator;
+}
+
 bool RealTensorOperator::LeftCheckZero(int l, int p1)
 {
     bool zero_flag = false;

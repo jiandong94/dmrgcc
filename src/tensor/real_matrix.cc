@@ -396,6 +396,101 @@ void RealMatrix::ReplaceMatrix(RealMatrix* tmp_matrix)
     else matrix_element_ = nullptr;
 }
 
+void RealMatrix::ParallelMatrix(int leigh, int &num_unparallel, int* &position_unparallel, 
+        RealMatrix* &transfer_tensor)
+{
+    bool zero;
+    double element[2], prefactor;
+    int info;
+    
+    if(leigh == 0)
+    {
+        position_unparallel = new int[column_];
+        for(int i=0;i<column_;++i)
+            position_unparallel[i] = -1;
+        position_unparallel[0] = 0;
+
+        transfer_tensor = new RealMatrix(column_, column_);
+        transfer_tensor->set_matrix_element(0, 0, 1.0);
+        num_unparallel = 1;
+
+        for(int r=0;r<column_;++r)
+        {
+            for(int k=0;k<num_unparallel;++k)
+            {
+                info = num_unparallel;
+                prefactor = 0.0;
+                zero = true;
+                
+                for(int l=0;l<row_;++l)
+                {
+                    element[0] = get_matrix_element(l, r);
+                    element[1] = get_matrix_element(l, position_unparallel[k]);
+
+                    isParallelElement(element, position_unparallel[k], info, prefactor, zero);
+
+                    if(info == -1) break;
+                }
+
+                if(info != -1)
+                {
+                    transfer_tensor->set_matrix_element(k, r, prefactor);
+                    break;
+                }
+            }
+            if(info == -1)
+            {
+                position_unparallel[num_parallel] = r;
+                transfer_tensor->set_matrix_element(num_unparallel, r, 1.0);
+                num_unparallel++;
+            }
+        }
+    }
+    else if(leigh == 1)
+    {
+        position_unparallel = new int[row_];
+        for(int i=0;i<row_;++i)
+            position_unparallel[i] = -1;
+        position_unparallel[0] = 0;
+
+        transfer_tensor = new RealMatrix(row_, row_);
+        transfer_tensor->set_matrix_element(0, 0, 1.0);
+        num_unparallel = 1;
+
+        for(int l=0;l<row_;++l)
+        {
+            for(int k=0;k<num_unparallel;++k)
+            {
+                info = num_unparallel;
+                prefactor = 0.0;
+                zero = true;
+                
+                for(int r=0;r<column_;++r)
+                {
+                    element[0] = get_matrix_element(l, r);
+                    element[1] = get_matrix_element(position_unparallel[k], r);
+
+                    isParallelElement(element, position_unparallel[k], info, prefactor, zero);
+
+                    if(info == -1) break;
+                }
+
+                if(info != -1)
+                {
+                    transfer_tensor->set_matrix_element(l, k, prefactor);
+                    break;
+                }
+            }
+            if(info == -1)
+            {
+                position_unparallel[num_parallel] = l;
+                transfer_tensor->set_matrix_element(l, num_unparallel, 1.0);
+                num_unparallel++;
+            }
+        }
+    }
+}
+
 void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
 {
     double* res_matrix_element;

@@ -73,11 +73,29 @@ class RealTensorOperator
     //
     void ResetTensorOperator();
 
-    //
+    // 
     //
     void ExpanTensorOperator(RealMatrix** basic_operator, int leigh, int expan_operator_index, 
             double expan_coefficient);
+    
+    // deparallelisation algorithm
+    //
+    void LeftParallelTensorOperator(int &num_unparallel, int* &position_unparallel, 
+            RealMatrix* &transfer_tensor);
 
+    // deparallelisation algorithm
+    //
+    void RightParallelTensorOperator(int &num_unparallel, int* &position_unparallel, 
+            RealMatrix* &transfer_tensor);
+
+    // deparallelisation algorithm
+    //
+    void LeftMergeTensorOperator(int &num_unparallel, RealMatrix* &transfer_tensor);
+    
+    // deparallelisation algorithm
+    //
+    void RightMergeTensorOperator(int &num_unparallel, RealMatrix* &transfer_tensor);
+    
     //
     //
     bool LeftCheckZero(int left_bond_index, int physics_index);
@@ -99,7 +117,6 @@ inline void RealTensorOperator::DefineTensorOperator()
         tensor_operator_[l] = new RealMatrix* [right_bond_];
         for(int r=0;r<right_bond_;++r)
             tensor_operator_[l][r] = new RealMatrix(physics_dim_, physics_dim_);
-
     }
 }
 
