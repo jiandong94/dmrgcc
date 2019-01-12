@@ -25,7 +25,7 @@ class BoseHubbardHamiltonian : public RealTensorHamiltonian
     //
     BoseHubbardHamiltonian(int num_site_x, int num_site_y, int physics_dim, double flux_value, 
             double hop_x, double hop_y, double inter_value, double chemical_value=0, 
-            bool period_x = false, bool period_y = false);
+            bool period_x=false, bool period_y=false);
 
     //
     //
@@ -33,8 +33,23 @@ class BoseHubbardHamiltonian : public RealTensorHamiltonian
 
     //
     //
-    DefineBasicTensor();
+    void DefineBasicTensor();
 
+    //
+    //
+    void DefineHamiltonian1(int p1, int p2, double coefficient);
+
+    //
+    //
+    void DefineHamiltonian2(int p1, int p2, double coefficient);
+    
+    //
+    //
+    void DefineHamiltonian3(int p, double coefficient);
+    
+    //
+    //
+    void DefineTensorHamiltonian();
 };
 
 

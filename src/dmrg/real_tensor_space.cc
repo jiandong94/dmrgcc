@@ -680,6 +680,12 @@ void RealTensorSpace::ReorderQuantumTable(int num_quantum, int num_table, int** 
     delete[] index;
 }
 
+void RealTensorSpace::MergeQuantumTable(int *merge_quantum_table, int *operator_quantum_table,
+        int *space_quantum_table)
+{
+    cout << "Base class can not merge QuantumTable" << endl;
+    exit(-1);
+}
 
 int RealTensorSpace::CheckQuantumTable(int site, int* left_table, int* right_table)
 {

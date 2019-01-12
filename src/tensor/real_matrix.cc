@@ -440,7 +440,7 @@ void RealMatrix::ParallelMatrix(int leigh, int &num_unparallel, int* &position_u
             }
             if(info == -1)
             {
-                position_unparallel[num_parallel] = r;
+                position_unparallel[num_unparallel] = r;
                 transfer_tensor->set_matrix_element(num_unparallel, r, 1.0);
                 num_unparallel++;
             }
@@ -483,7 +483,7 @@ void RealMatrix::ParallelMatrix(int leigh, int &num_unparallel, int* &position_u
             }
             if(info == -1)
             {
-                position_unparallel[num_parallel] = l;
+                position_unparallel[num_unparallel] = l;
                 transfer_tensor->set_matrix_element(l, num_unparallel, 1.0);
                 num_unparallel++;
             }

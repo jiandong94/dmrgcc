@@ -26,7 +26,22 @@ void eatwhite(istream& is)
     char c;
     while(is.get(c))
     {
+        // space, \t, \r, \n
         if(!isspace(c))
+        {
+            is.putback(c);
+            break;
+        }
+    }
+}
+
+void eatblank(istream& is)
+{
+    char c;
+    while(is.get(c))
+    {
+        // space, \t
+        if(!isblank(c))
         {
             is.putback(c);
             break;
@@ -158,7 +173,7 @@ int InputGroup::GotoToken(string s)
             char c;
             if(!(input_file_->file().get(c))) return 0;
             if(c != '=') return 0;
-            eatwhite(input_file_->file());
+            eatblank(input_file_->file());
             return 1;
         }
         if(t[0] == '{')
@@ -213,6 +228,19 @@ int InputGroup::GetDouble(string s, double& res, bool hasdf, double df)
 
 int InputGroup::GetString(string s, string& res, bool hasdf, string df)
 {
+    char c;
+    if(GotoToken(s))
+    {
+        input_file_->file().get(c);
+        if(isspace(c))
+        {
+            if(hasdf) printf("Def %s.%s = %s\n", name_.c_str(), s.c_str(), df.c_str());
+            else printf("Def %s.%s = %s\n", name_.c_str(), s.c_str(), "None");
+            return 1;
+        }
+        input_file_->file().putback(c);
+    }
+    
     if(!GotoToken(s) || !(input_file_->file() >> res))
     {
         if(hasdf) printf("Def %s.%s = %s\n", name_.c_str(), s.c_str(), df.c_str());

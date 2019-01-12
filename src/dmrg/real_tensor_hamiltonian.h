@@ -70,7 +70,7 @@ class RealTensorHamiltonian
 
     //
     //
-    void DefineQuantumTable(num_quantum);
+    void DefineQuantumTable(int num_quantum);
 
     //
     //

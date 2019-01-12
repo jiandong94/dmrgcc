@@ -18,7 +18,7 @@ class BoseHubbardSpace : public RealTensorSpace
 
     // constructor
     //
-    BoseHubbardSpace(int num_site_x, int num_site_y, int num_boson, int num_level);
+    BoseHubbardSpace(int num_site_x, int num_site_y, int num_boson, int physics_dim);
 
     //
     //

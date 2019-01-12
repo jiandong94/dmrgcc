@@ -162,7 +162,7 @@ void RealTensorHamiltonian::ExpanTensorHamiltonian(int site, int expan_operator_
     }
 }
 
-void ParallelTensorHamiltonian()
+void RealTensorHamiltonian::ParallelTensorHamiltonian()
 {
     RealMatrix* transfer_tensor;
     int num_unparallel, *position_unparallel;
@@ -189,6 +189,11 @@ void ParallelTensorHamiltonian()
     }
 }
 
+void RealTensorHamiltonian::DefineTensorHamiltonian()
+{
+    error("Base class can not define tensor hamiltonian");
+}
+
 void RealTensorHamiltonian::DefineQuantumTable(int num_quantum)
 {
     num_quantum_ = num_quantum;
@@ -209,10 +214,10 @@ void RealTensorHamiltonian::ParallelQuantumTable(int site, int num_unparallel,
     result_quantum_table = new int* [num_unparallel];
     for(int i=0;i<num_unparallel;++i)
     {
-        result_quantum_table = new int[num_quantum_];
+        result_quantum_table[i] = new int[num_quantum_];
         for(int j=0;j<num_quantum_;++j)
         {
-            result_quantum_table[i][j] = quantum_table_[site][position_unparallel[i]][j]
+            result_quantum_table[i][j] = quantum_table_[site][position_unparallel[i]][j];
         }
     }
 

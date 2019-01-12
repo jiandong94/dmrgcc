@@ -22,12 +22,14 @@ vpath *.o $(OBJ_DIR)
 export BIN_DIR SRC_DIR INC_DIR OBJ_DIR CC CFLAGS INCLUDE LIBRARY
 
 
-all:$(SUBDIRS) TEST
+all:$(SUBDIRS) TEST MODEL
 
 $(SUBDIRS):ECHO
 	make -C $@
 TEST:ECHO
 	make -C test
+MODEL:ECHO
+	make -C model
 ECHO:
 	@echo $(SUBDIRS)
 

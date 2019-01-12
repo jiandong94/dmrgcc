@@ -90,11 +90,11 @@ class RealTensorOperator
 
     // deparallelisation algorithm
     //
-    void LeftMergeTensorOperator(int &num_unparallel, RealMatrix* &transfer_tensor);
+    void LeftMergeTensorOperator(int num_unparallel, RealMatrix* transfer_tensor);
     
     // deparallelisation algorithm
     //
-    void RightMergeTensorOperator(int &num_unparallel, RealMatrix* &transfer_tensor);
+    void RightMergeTensorOperator(int num_unparallel, RealMatrix* transfer_tensor);
     
     //
     //

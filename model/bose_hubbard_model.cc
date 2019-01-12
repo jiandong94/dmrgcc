@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     bool disk_record = input.getBool("disk_record");
     string cache_name = input.getString("cache_name");
     bool disk_resume = input.getBool("disk_resume");
-    string resume_name = input.getBool("resume_name");
+    string resume_name = input.getString("resume_name");
 
     int first_block = input.getInt("first_block");
     int first_dim = input.getInt("first_dim");
@@ -36,9 +36,15 @@ int main(int argc, char* argv[])
     
     RealTensorSpace* space;
     RealTensorHamiltonian* hamiltonian;
-    RealTensorLanczos* lanczos;
+    RealTensorRundmrg* rundmrg;
 
     space = new BoseHubbardSpace(num_site_x, num_site_y, num_boson, physics_dim);
     hamiltonian = new BoseHubbardHamiltonian(num_site_x, num_site_y, flux_value, Jx, Jy, 
                                              U, mu, period_x, period_y);
+    rundmrg = new RealTensorRundmrg(space, hamiltonian, disk_cache, cache_name,
+            num_sweep, table);
+    
+    delete space;
+    delete hamiltonian;
+    delete rundmrg;
 }

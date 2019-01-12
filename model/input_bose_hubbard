@@ -8,6 +8,7 @@ input
     Jx = -1
     Jy = -1
     U = 10
+    mu = 0.0
     period_x = false
     period_y = false
 

@@ -15,7 +15,7 @@ BoseHubbardSpace::BoseHubbardSpace(int num_site_x, int num_site_y, int num_boson
     num_site_mm_ = num_site_x_*num_site_y_-1;
     tensor_lattice_ = new RealTensorLattice* [num_site_];
     for(int i=0;i<num_site_;++i)
-        tensor_lattice_[i] = new RealTensorLattice(physcis_dim_);
+        tensor_lattice_[i] = new RealTensorLattice(physics_dim_);
     DefineQuantumTable();
 }
 
