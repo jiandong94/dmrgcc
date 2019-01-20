@@ -65,7 +65,7 @@ void RealTensorSpace::DefineTensorSpaceParameter(int max_block, int max_dim,
     noise_factor_ = noise_factor;
 }
 
-void RealTensorSpace::InitializeTensorSpace(int initial_block, int initial_dim)
+void RealTensorSpace::DefineTensorSpace(int initial_block, int initial_dim)
 {
     int num_left_block, num_right_block, *left_block, *right_block, *left_dim, *right_dim, 
         num_block, *left_index, *right_index, *physics_index, row, column;
@@ -158,11 +158,13 @@ void RealTensorSpace::PrintTensorSpace()
             }
         }
     }
+    printf("\n");
     cout << "Tensor Lattice: " << endl;
     for(int i=0;i<num_site_;++i)
     {
         cout << "----------Site="<< i << "----------" << endl;
         tensor_lattice_[i]->PrintTensorLattice();
+        printf("\n\n\n");
     }
 }
 

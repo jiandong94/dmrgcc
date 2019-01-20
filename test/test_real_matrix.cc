@@ -172,6 +172,51 @@ int main()
     delete[] sigular_value;
     delete matrix;
 
+    cout << endl;
+    cout << "9. ParallelMatrix" << endl;
+    cout << "Left Parallel" << endl;
+    matrix = new RealMatrix(2,3);
+    matrix->set_matrix_element(0,0,1);
+    matrix->set_matrix_element(0,1,3);
+    matrix->set_matrix_element(0,2,1);
+    matrix->set_matrix_element(1,0,2);
+    matrix->set_matrix_element(1,1,4);
+    matrix->set_matrix_element(1,2,2);
+    matrix->PrintMatrix();
+    
+    int num_unparallel;
+    int* position_unparallel;
+    RealMatrix* transfer_tensor;
+    matrix->ParallelMatrix(0, num_unparallel, position_unparallel, 
+            transfer_tensor);
+    cout << "num_unparallel: " << num_unparallel << endl;
+    cout << "position_unparallel: "  << endl;
+    for(int i=0;i<num_unparallel;++i)
+    {
+      cout << "[" << i << "] " << position_unparallel[i] << endl;
+    }
+    cout << "transfer_tensor: " << endl;
+    transfer_tensor->PrintMatrix();
+
+    cout << "Right Parallel" << endl;
+    matrix = new RealMatrix(3,2);
+    matrix->set_matrix_element(0,0,1);
+    matrix->set_matrix_element(0,1,2);
+    matrix->set_matrix_element(1,0,3);
+    matrix->set_matrix_element(1,1,4);
+    matrix->set_matrix_element(2,0,1);
+    matrix->set_matrix_element(2,1,2);
+    matrix->PrintMatrix();
+    matrix->ParallelMatrix(1, num_unparallel, position_unparallel, 
+            transfer_tensor);
+    cout << "num_unparallel: " << num_unparallel << endl;
+    cout << "position_unparallel: "  << endl;
+    for(int i=0;i<num_unparallel;++i)
+    {
+      cout << "[" << i << "] " << position_unparallel[i] << endl;
+    }
+    cout << "transfer_tensor: " << endl;
+    transfer_tensor->PrintMatrix();
 
     return 0;
 }

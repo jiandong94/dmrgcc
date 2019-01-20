@@ -47,21 +47,26 @@ RealMatrixBlock** RealTensorContraction::get_right_contraction_tensor()
 
 void RealTensorContraction::PrintTensorContraction()
 {
-    cout << "left bond = " << left_bond_ << endl;
+    cout << "left bond = " << left_bond_ << ", ";
     cout << "right bond = " << right_bond_ << endl;
-    
-    cout << "left contraction tensor L : " << endl;
+    cout << " ----------------------------" << endl;
+    cout << "|left contraction tensor L : | " << endl;
+    cout << " ----------------------------" << endl;
     for(int i=0;i<left_bond_;++i)
     {
         cout << "left bond index = " << i << endl;
-        left_contraction_tensor_[i]->PrintMatrixBlock();
+        if(left_contraction_tensor_[i] != nullptr)
+            left_contraction_tensor_[i]->PrintMatrixBlock();
     }
     
-    cout << "right contraction tensor R : " << endl;
+    cout << " ----------------------------" << endl; 
+    cout << "|right contraction tensor R :| " << endl;
+    cout << " ----------------------------" << endl;
     for(int i=0;i<right_bond_;++i)
     {
         cout << "right bond index = " << i << endl;
-        right_contraction_tensor_[i]->PrintMatrixBlock();
+        if(right_contraction_tensor_[i] != nullptr)
+            right_contraction_tensor_[i]->PrintMatrixBlock();
     }
 }
 
@@ -979,7 +984,7 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
     // for each right index(block), find all possible left indiced(blocks)
     num_same_index = new int[num_right_block];
     position_same_index = new int* [num_right_block];
-    for(int i=0;i<num_left_block;++i)
+    for(int i=0;i<num_right_block;++i)
         tensor_lattice->ket_tensor_->FindMatrixBlock(num_same_index[i], position_same_index[i], 1, i);
 
     // if zero_flag[o1][j][i] is true, 
@@ -1046,7 +1051,7 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
 
         // if left_bond > right_bond?
         delete tensor_contraction->right_contraction_tensor_[o1];
-        tensor_contraction->left_contraction_tensor_[o1] = new RealMatrixBlock(num_block, left_index, right_index);
+        tensor_contraction->right_contraction_tensor_[o1] = new RealMatrixBlock(num_block, left_index, right_index);
 
         delete[] left_index;
         delete[] right_index;

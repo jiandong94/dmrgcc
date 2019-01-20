@@ -821,7 +821,7 @@ void RealTensorLattice::RightCanonicalTensorLattice(int max_dim, double canonica
 
         delete[] position_same_index;
     }
-    ComputeTruncateDim(max_dim, canonical_precision, num_right_block_, singular_dim, 
+    ComputeTruncateDim(max_dim, canonical_precision, num_left_block_, singular_dim, 
                        singular_value, truncate_dim);
     // right_canonical_tensor => ket_tensor_
     // left_canonical_tensor_*singular_value => canonical_tensor_

@@ -55,7 +55,7 @@ class RealTensorHamiltonian
 
     //
     //
-    void ExpanTensorHamiltonian(int site, int expan_operator_index, int expan_coefficient, 
+    void ExpanTensorHamiltonian(int site, int expan_operator_index, double expan_coefficient, 
             int* expan_table);
 
     //

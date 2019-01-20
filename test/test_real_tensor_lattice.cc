@@ -12,8 +12,8 @@ int main()
 
     cout << endl;
     cout << "DefineTensorLattice" << endl;
-    int num_left_block = 3;
-    int num_right_block = 3;
+    int num_left_block = 2;
+    int num_right_block = 1;
     int *left_block = new int[num_left_block];
     int *right_block = new int[num_right_block];
     int *left_dim = new int[num_left_block];
@@ -22,8 +22,8 @@ int main()
     {
         left_block[i] = i;
         right_block[i] = i;
-        left_dim[i] = 2;
-        right_dim[i] = 3;
+        left_dim[i] = 3;
+        right_dim[i] = 1;
     }
     tensor_lattice->DefineTensorLattice(num_left_block, num_right_block, 
             left_block, right_block, left_dim, right_dim);
@@ -32,10 +32,14 @@ int main()
 
     cout << endl;
     cout << "DefineTensorLattice (ket tensor)" << endl;
-    int num_block = 4, row = 2, column = 3;
-    int left_index[] = {0, 1, 1, 2};
-    int right_index[] = {0, 1, 1, 2};
-    int physics_index[] = {0, 0, 0, 0};
+    //int num_block = 4, row = 2, column = 3;
+    //int left_index[] = {0, 1, 1, 2};
+    //int right_index[] = {0, 1, 1, 2};
+    //int physics_index[] = {0, 0, 0, 0};
+    int num_block = 2, row = 3, column = 1;
+    int left_index[] = {0, 1};
+    int right_index[] = {0, 0};
+    int physics_index[] = {0, 1};
     tensor_lattice->DefineTensorLattice(num_block, left_index, right_index, 
             physics_index, row, column);
     tensor_lattice->PrintTensorLattice();

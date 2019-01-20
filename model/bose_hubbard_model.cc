@@ -22,27 +22,20 @@ int main(int argc, char* argv[])
     bool period_x = input.getBool("period_x");
     bool period_y = input.getBool("period_y");
 
-    bool disk_cache = input.getBool("disk_cache");
-    bool disk_record = input.getBool("disk_record");
-    string cache_name = input.getString("cache_name");
-    bool disk_resume = input.getBool("disk_resume");
-    string resume_name = input.getString("resume_name");
+    // input file should also include
+    // disk_cache, cache_name, cache_resume, resume_name
+    // record_process, process_name, first_block, first_dim
+    // num_sweep, sweep table
 
-    int first_block = input.getInt("first_block");
-    int first_dim = input.getInt("first_dim");
-    int num_sweep =  input.getInt("num_sweep");
-
-    auto table = InputGroup(input, "sweeps");
-    
     RealTensorSpace* space;
     RealTensorHamiltonian* hamiltonian;
     RealTensorRundmrg* rundmrg;
 
     space = new BoseHubbardSpace(num_site_x, num_site_y, num_boson, physics_dim);
-    hamiltonian = new BoseHubbardHamiltonian(num_site_x, num_site_y, flux_value, Jx, Jy, 
+    hamiltonian = new BoseHubbardHamiltonian(num_site_x, num_site_y, physics_dim, flux_value, Jx, Jy, 
                                              U, mu, period_x, period_y);
-    rundmrg = new RealTensorRundmrg(space, hamiltonian, disk_cache, cache_name,
-            num_sweep, table);
+    rundmrg = new RealTensorRundmrg(space, hamiltonian, input);
+    rundmrg->Run();
     
     delete space;
     delete hamiltonian;

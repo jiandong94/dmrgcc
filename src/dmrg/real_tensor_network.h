@@ -46,6 +46,10 @@ class RealTensorNetwork
 
     //
     //
+    void PrintTensorNetwork();
+
+    //
+    //
     void RecordTensorNetwork(int leigh, int site);
 
     //

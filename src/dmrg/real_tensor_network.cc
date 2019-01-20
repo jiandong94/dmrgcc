@@ -65,6 +65,20 @@ void RealTensorNetwork::ResetTensorNetwork(int leigh, int site)
     tensor_contraction_[site]->ResetTensorContraction(leigh);
 }
 
+void RealTensorNetwork::PrintTensorNetwork()
+{
+    printf("\n");
+    cout << "===============TENSOR NETWORK================" << endl;
+    cout << "number of L/R = " << num_site_pp_ << endl;
+    cout << "Tensor Contraction: " << endl;
+    for(int i=0;i<num_site_pp_;++i)
+    {
+        cout << "----------Site="<< i << "----------" << endl;
+        tensor_contraction_[i]->PrintTensorContraction();
+        printf("\n\n\n");
+    }
+}
+
 void RealTensorNetwork::RecordTensorNetwork(int leigh, int site)
 {
     char tensor_name[512];

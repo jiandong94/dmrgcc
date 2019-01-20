@@ -54,6 +54,22 @@ void QuickSort(T* array, int* index, int left, int right, int flag=0);
 void ReorderRelevantArray(int num_quantum, int num_table, int** quantum_table, 
         int* index);
 
+//void RealTriMatrixDiag(double* );
+//
+
+void RealSymMatrixDiag(double* eigenvector, double* eigenvalue, int vector_dim);
+
+
+inline double get_wall_time()
+{
+    struct timeval time;
+    if(gettimeofday(&time,NULL)){
+        return 0;
+    }
+
+    return (double)time.tv_sec + (double)time.tv_usec * 0.000001;
+}
+
 inline void error(const string& s)
 {
     cout << endl << s << endl;
@@ -115,7 +131,25 @@ inline void isParallelElement(double* element, int position, int& info, double& 
     }
 }
 
+inline void MkdirCacheFolder(bool disk_cache, char* cache_name)
+{
+    char label[512];
+    int dummy;
 
+    if(disk_cache == true)
+    {
+        if(cache_name[0] != '.')
+        {
+            sprintf(label, "mkdir %s", cache_name);
+            dummy = system(label);
+        }
+
+        sprintf(label, "mkdir %s/SpaceDiskCacheFile", cache_name);
+        dummy = system(label);
+        sprintf(label, "mkdir %s/NetworkDiskCacheFile", cache_name);
+        dummy = system(label);
+    }
+}
 
 
 #endif // UTIL_GENERAL_H_

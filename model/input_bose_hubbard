@@ -6,20 +6,21 @@ input
     physics_dim = 2
     flux = 0.5
     Jx = -1
-    Jy = -1
+    Jy = -1.3
     U = 10
     mu = 0.0
     period_x = false
     period_y = false
 
-    disk_cache = true
-    disk_record = true
+    disk_cache = false
     cache_name = bose_hubbard
-    disk_resume = false
+    cache_resume = false
     resume_name = 
+    record_process = true
+    process_name = bose_hubbard
     
     first_block = 20
-    first_dim = 5
+    first_dim = 10
     num_sweep = 12
     sweeps
     {

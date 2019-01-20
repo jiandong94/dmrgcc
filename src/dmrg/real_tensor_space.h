@@ -9,7 +9,7 @@ class RealTensorSpace
     protected:
 
     // disk cache
-    bool disk_cache_;
+    bool disk_cache_ = false;
     char cache_name_[512];
 
     // number of sites
@@ -67,7 +67,7 @@ class RealTensorSpace
             double canonical_precision, double noise_factor);
 
     
-    void InitializeTensorSpace(int initial_block, int initial_dim);
+    void DefineTensorSpace(int initial_block, int initial_dim);
     //
     //
     void PrintTensorSpace();

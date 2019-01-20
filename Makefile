@@ -13,6 +13,7 @@ SUBDIRS=$(shell ls -l | grep ^d | awk '{if($$9 == "src") print $$9}')
 
 CC = g++
 CFLAGS = -fopenmp -m64 -std=c++11 -fPIC -O4 -msse2 -msse3 -msse4 
+#CFLAGS = -fopenmp -m64 -std=c++11 -fPIC -g
 MKL_INCLUDE_PATH = /opt/intel/mkl/include 
 MKL_LIBRARY_PATH = /opt/intel/mkl/lib/intel64 -Wl,--start-group -lmkl_gnu_thread -lmkl_core -lmkl_intel_lp64 -Wl,--end-group
 INCLUDE = -I$(INC_DIR) -I$(SRC_DIR) -I$(MKL_INCLUDE_PATH)

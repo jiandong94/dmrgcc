@@ -9,7 +9,6 @@ BoseHubbardSpace::BoseHubbardSpace(int num_site_x, int num_site_y, int num_boson
     physics_dim_ = physics_dim;
     
     // base class member
-    disk_cache_ = false;
     num_site_ = num_site_x_*num_site_y_;
     num_site_pp_ = num_site_x_*num_site_y_+1;
     num_site_mm_ = num_site_x_*num_site_y_-1;

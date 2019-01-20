@@ -26,12 +26,36 @@ RealTensorOperator* RealTensorHamiltonian::get_tensor_hamiltonian(int site)
 
 void RealTensorHamiltonian::PrintTensorHamiltonian()
 {
-    cout << "==============================" << endl;
-    cout << "TensorHamiltonian" << endl;
+    cout << "===============TENSOR Hamiltonian================" << endl;
+    cout << "number of sites = " << num_site_ << endl;
+    cout << "Quantum Table: " << endl;
+    if(quantum_table_ == nullptr)
+    {
+        cout << "quantum table is nullptr!" << endl;
+    }
+    else
+    {
+        for(int i=0;i<num_site_pp_;++i)
+        {
+            cout << "----------Position="<< i << "----------" << endl;
+            for(int k=0;k<num_quantum_;++k)
+            {
+                cout << "QN" << k << ": ";
+                for(int j=0;j<num_table_[i];++j)
+                {
+                    cout << quantum_table_[i][j][k] << " ";
+                }
+                cout << endl;
+            }
+        }
+    }
+    printf("\n");
+    cout << "TensorHamiltonian: " << endl;
     for(int i=0;i<num_site_;++i)
     {
-        cout << "----------site = " << i << "----------" << endl;
+        cout << "----------Site = " << i << "----------" << endl;
         tensor_hamiltonian_[i]->PrintTensorOperator();
+        printf("\n\n\n");
     }
 }
 
@@ -124,7 +148,7 @@ void RealTensorHamiltonian::ReadTensorHamiltonian(ifstream &tensor_hamiltonian_f
     }
 }
 
-void RealTensorHamiltonian::ExpanTensorHamiltonian(int site, int expan_operator_index, int expan_coefficient, 
+void RealTensorHamiltonian::ExpanTensorHamiltonian(int site, int expan_operator_index, double expan_coefficient, 
         int* expan_table)
 {
     int expan_num_table, **expan_quantum_table;

@@ -78,7 +78,7 @@ void RealMatrix::set_matrix_element(int row, int column, double element)
 {
     if(row >= row_ || column >= column_)
     {
-        cout << "Matrix indices are out of range!" << endl;
+        cout << "Matrix indices are out of range in set_matrix_element" << endl;
         exit(-1);
     }
     matrix_element_[row*column_+column] = element;
@@ -91,7 +91,7 @@ double RealMatrix::get_matrix_element(int row, int column)
 {
     if(row >= row_ || column >= column_)
     {
-        cout << "Matrix indices are out of range!" << endl;
+        cout << "Matrix indices are out of range in get_matrix_element" << endl;
         exit(-1);
     }
 
@@ -236,7 +236,7 @@ void RealMatrix::AddToMatrix(RealMatrix* tmp_matrix)
     {
         if(row_ != tmp_matrix->row_ || column_ != tmp_matrix->column_)
         {
-            cout << "Matrix indeces do not match!" << endl;
+            cout << "Matrix indeces do not match in AddToMatrix" << endl;
             exit(-1);
         }
         for(int i=0;i<total_element_num_;++i) matrix_element_[i] += tmp_matrix->matrix_element_[i];
@@ -305,7 +305,7 @@ void RealMatrix::MatrixElementProduct(RealMatrix* tmp_matrix)
 {
     if(row_ != tmp_matrix->row_ || column_ != tmp_matrix->column_)
     {
-        cout << "Matrix indeces do not match!" << endl;
+        cout << "Matrix indeces do not match in MatrixElementProduct" << endl;
         exit(-1);
     }
     for(int i=0;i<total_element_num_;++i) matrix_element_[i] *= tmp_matrix->matrix_element_[i];
@@ -369,7 +369,7 @@ RealMatrix* RealMatrix::ReshapeMatrix(int row, int column)
     RealMatrix* tmp_matrix;
     if(row*column != row_*column_)
     {
-        cout << "Reshape dimension is not match!" << endl;
+        cout << "Reshape dimension is not match in ReshapeMatrix" << endl;
         exit(-1);
     }
     if(total_element_num_>0)
@@ -522,7 +522,7 @@ void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
     }
     else
     {
-        cout << "row or column dimension is not match" << endl;
+        cout << "row or column dimension is not match in ExpanMatrix" << endl;
         exit(-1);
     }
 

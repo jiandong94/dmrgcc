@@ -251,7 +251,7 @@ void RealTensorOperator::RightParallelTensorOperator(int &num_unparallel, int* &
     for(int p1=0;p1<physics_dim_;++p1) for(int p2=0;p2<physics_dim_;++p2)
     {   
         // row first
-        reshape_position = p2+(p1+l*physics_dim_)*physics_dim_;
+        reshape_position = p2+(p1+r*physics_dim_)*physics_dim_;
         element = tensor_operator_[l][r]->get_matrix_element(p1, p2);
         reshape_tensor->set_matrix_element(l, reshape_position, element);
     }
@@ -266,7 +266,7 @@ void RealTensorOperator::RightParallelTensorOperator(int &num_unparallel, int* &
     for(int p1=0;p1<physics_dim_;++p1) for(int p2=0;p2<physics_dim_;++p2)
     {   
         // row first
-        reshape_position = p2+(p1+l*physics_dim_)*physics_dim_;
+        reshape_position = p2+(p1+r*physics_dim_)*physics_dim_;
         element = reshape_tensor->get_matrix_element(position_unparallel[l], reshape_position);
         tensor_operator_[l][r]->set_matrix_element(p1, p2, element);
     }

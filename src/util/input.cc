@@ -235,7 +235,7 @@ int InputGroup::GetString(string s, string& res, bool hasdf, string df)
         if(isspace(c))
         {
             if(hasdf) printf("Def %s.%s = %s\n", name_.c_str(), s.c_str(), df.c_str());
-            else printf("Def %s.%s = %s\n", name_.c_str(), s.c_str(), "None");
+            else printf("No  %s.%s = %s\n", name_.c_str(), s.c_str(), "None");
             return 1;
         }
         input_file_->file().putback(c);

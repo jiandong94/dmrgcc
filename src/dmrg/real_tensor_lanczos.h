@@ -13,24 +13,20 @@ class RealTensorLanczos
 
     RealTensorNetwork* network_;
 
-    bool disk_cache_;
-    char cache_name_[512];
-
-    int num_site_;
-    int num_site_pp_;
-    int num_site_mm_;
-
-    int num_sweep_;
-    int* num_iter_;
-    int* max_block_;
-    int* max_dim_;
-    double* canonical_precision;
-    double* noise_factor;
-
     public:
 
     RealTensorLanczos(RealTensorSpace* space, RealTensorHamiltonian* hamiltonian, 
-            int num_site, bool disk_cache);
+            RealTensorNetwork* network);
+
+    ~RealTensorLanczos();
+
+    void LanczosMethod(int num_times_sweep, int site, double& result);
+
+    void VectorMultiply(double* vector1, double* vector2, int vector_dim, double &result);
+
+    void VectorSubtraction(double* vector1, double* vector2, int vector_dim, double factor2);
+
+    void GramSchmidtMethod(double **vector, int vector_dim, int num_vector);
 
 };
 

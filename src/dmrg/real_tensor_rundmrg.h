@@ -14,7 +14,12 @@ class RealTensorRundmrg
     RealTensorNetwork* network_;
 
     bool disk_cache_;
-    string cache_name_;
+    char cache_name_[512];
+    bool cache_resume_;
+    char resume_name_[512];
+    bool record_process_;
+    char process_name_[512];
+
 
     int num_site_;
     int num_site_pp_;
@@ -32,7 +37,7 @@ class RealTensorRundmrg
     //
     //
     RealTensorRundmrg(RealTensorSpace* space, RealTensorHamiltonian* hamiltonian,
-            bool disk_cache, string cache_name, int num_sweep, InputGroup table);
+        InputGroup& input);
 
     //
     //
@@ -41,6 +46,14 @@ class RealTensorRundmrg
     //
     //
     void Sweep(InputGroup &table);
+
+    //
+    //
+    void Run();
+
+    // right canonical tensor space and compute
+    // all right tensor
+    void Initialize();
 };
 
 #endif // DMRGCC_DMRG_REAL_TENSOR_RUNDMRG_H_
