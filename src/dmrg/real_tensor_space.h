@@ -111,6 +111,10 @@ class RealTensorSpace
     //
     //
     void ExpanTensorSpace(int leigh, int site);
+
+    //
+    //
+    void MatchTensorSpace(int leigh, int site);
     protected:
 
     //

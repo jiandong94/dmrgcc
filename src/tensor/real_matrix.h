@@ -107,6 +107,8 @@ class RealMatrix
     // add the matrix to matrix
     //
     void AddToMatrix(RealMatrix* tmp_matrix);
+    
+    void AddToMatrix(double factor, RealMatrix* tmp_matrix);
 
     // multiply the matrix to scalar
     //
@@ -119,7 +121,7 @@ class RealMatrix
 
     //
     //
-    RealMatrix* MatrixKronProduct(RealMatrix* tmp_matrix_1, RealMatrix* tmp_matrix_2);
+    RealMatrix* MatrixKronProduct(RealMatrix* tmp_matrix);
 
     // element-wise product
     //

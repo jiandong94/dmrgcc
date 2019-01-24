@@ -101,7 +101,7 @@ class RealMatrixBlock
 
     //
     //
-    void AddToMatrixBlock(int position, RealMatrix* tmp_matrix);
+    void AddToMatrixBlock(int position, double factor, RealMatrix* tmp_matrix);
 
     //
     //

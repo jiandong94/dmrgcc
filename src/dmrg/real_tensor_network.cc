@@ -133,7 +133,6 @@ void RealTensorNetwork::ExpanTensorNetwork(int leigh, int site)
                hamiltonian_->tensor_hamiltonian_[site], space_->expan_tensor_lattice_, 
                mapping_table, space_->noise_factor_);
     }
-
     for(int i=0;i<operator_num_table;++i)
         delete[] mapping_table[i];
     delete mapping_table;

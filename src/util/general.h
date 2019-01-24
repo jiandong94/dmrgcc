@@ -51,6 +51,9 @@ using std::string;
 template <typename T>
 void QuickSort(T* array, int* index, int left, int right, int flag=0);
 
+template <typename T>
+void QuickSort(T* array, int left, int right, int flag=0);
+
 void ReorderRelevantArray(int num_quantum, int num_table, int** quantum_table, 
         int* index);
 

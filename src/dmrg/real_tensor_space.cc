@@ -122,8 +122,8 @@ void RealTensorSpace::DefineTensorSpace(int initial_block, int initial_dim)
         delete[] right_index;
         delete[] physics_index;
 
-        if(i > 0) MergeTensorSpace(0, i);
         CanonicalTensorSpace(0, i);
+        if(i > 0) MergeTensorSpace(0, i);
         
         if(disk_cache_ == true)
         {
@@ -335,7 +335,6 @@ void RealTensorSpace::ExpanTensorSpace(int leigh, int site)
     }
 
     origin_tensor_lattice = new RealTensorLattice(tensor_lattice_[site]);
-
     if(leigh == 0)
     {
         num_left_block = origin_tensor_lattice->get_num_left_block();
@@ -366,7 +365,6 @@ void RealTensorSpace::ExpanTensorSpace(int leigh, int site)
     else if(leigh == 1)
         tensor_lattice_[site]->RightExpanTensorLattice(origin_tensor_lattice, 
                                                       expan_tensor_lattice_);
-
     delete expan_tensor_lattice_;
     expan_tensor_lattice_ = nullptr;
 
@@ -388,7 +386,57 @@ void RealTensorSpace::ExpanTensorSpace(int leigh, int site)
     delete[] physics_index;
 }
 
+void RealTensorSpace::MatchTensorSpace(int leigh, int site)
+{
+    RealTensorLattice *origin_tensor_lattice;
+    int num_left_block, num_right_block, *left_block, *right_block, *left_dim, *right_dim;
+    int num_block, *left_index, *right_index, *physics_index;
 
+    if(max_block_<0||max_dim_<0||noise_factor_>1) return;
+    
+    origin_tensor_lattice = new RealTensorLattice(tensor_lattice_[site]);
+
+    if(leigh==0 && site>0)
+    {
+        num_left_block = tensor_lattice_[site-1]->get_num_right_block();
+        left_block = tensor_lattice_[site-1]->get_right_block();
+        left_dim = tensor_lattice_[site-1]->get_match_dim();
+
+        num_right_block = origin_tensor_lattice->get_num_right_block();
+        right_block = origin_tensor_lattice->get_right_block();
+        right_dim = origin_tensor_lattice->get_right_dim();
+    }
+    else if(leigh==1 && site<num_site_mm_)
+    {
+
+        num_left_block = origin_tensor_lattice->get_num_left_block();
+        left_block = origin_tensor_lattice->get_left_block();
+        left_dim = origin_tensor_lattice->get_left_dim();
+
+        num_right_block = tensor_lattice_[site+1]->get_num_left_block();
+        right_block = tensor_lattice_[site+1]->get_left_block();
+        right_dim = tensor_lattice_[site+1]->get_match_dim();
+    }
+
+    tensor_lattice_[site]->DefineTensorLattice(num_left_block, num_right_block, 
+            left_block, right_block, left_dim, right_dim);
+    ComputeTensorIndex(site, num_block, left_index, right_index, physics_index);
+    tensor_lattice_[site]->DefineTensorLattice(num_block, left_index, right_index, 
+            physics_index, 1, 1);
+    tensor_lattice_[site]->ResetTensorLattice();
+    
+    if(leigh==0 && site>0)
+        tensor_lattice_[site]->RightExpanTensorLattice(origin_tensor_lattice, 
+                                                      nullptr);
+    else if(leigh==1 && site<num_site_mm_)
+        tensor_lattice_[site]->LeftExpanTensorLattice(origin_tensor_lattice, 
+                                                      nullptr);
+
+    delete origin_tensor_lattice;
+    delete[] left_index;
+    delete[] right_index;
+    delete[] physics_index;
+}
 
 void RealTensorSpace::ComputeLatticeBlock(int site, int &num_left_block, int &num_right_block, 
         int* &left_block, int* &right_block)
@@ -505,7 +553,7 @@ void RealTensorSpace::ComputeExpanTensorLattice(int leigh, int site, int operato
 {
     bool *merge_flag;
     int num_left_table, num_right_table, **left_quantum_table, **right_quantum_table;
-    int num_leigh_table, **leigh_quantum_table, num_leigh_block, *leigh_block;
+    int num_leigh_table, **leigh_quantum_table, num_leigh_block, *leigh_block, old_num_leigh_block, *old_leigh_block;
     int *merge_quantum_table, index, info;
     int physics_dim, num_left_block, num_right_block, *left_block, *right_block, *left_dim, *right_dim;
     int num_block, *left_index, *right_index, *physics_index;
@@ -519,13 +567,13 @@ void RealTensorSpace::ComputeExpanTensorLattice(int leigh, int site, int operato
     leigh_quantum_table = quantum_table_[site+leigh];
     if(leigh == 0)
     {
-        num_leigh_block = tensor_lattice_[site]->get_num_left_block();
-        leigh_block = tensor_lattice_[site]->get_left_block();
+        old_num_leigh_block = tensor_lattice_[site]->get_num_left_block();
+        old_leigh_block = tensor_lattice_[site]->get_left_block();
     }
     else if(leigh == 1)
     {
-        num_leigh_block = tensor_lattice_[site]->get_num_right_block();
-        leigh_block = tensor_lattice_[site]->get_right_block();
+        old_num_leigh_block = tensor_lattice_[site]->get_num_right_block();
+        old_leigh_block = tensor_lattice_[site]->get_right_block();
     }
     physics_dim = tensor_lattice_[site]->get_physics_dim();
 
@@ -534,8 +582,8 @@ void RealTensorSpace::ComputeExpanTensorLattice(int leigh, int site, int operato
     mapping_table = new int* [operator_num_table];
     for(int i=0;i<operator_num_table;++i)
     {
-        mapping_table[i] = new int[num_leigh_table];
-        for(int j=0;j<num_leigh_table;++j)
+        mapping_table[i] = new int[old_num_leigh_block];
+        for(int j=0;j<old_num_leigh_block;++j)
             mapping_table[i][j] = -1;
     }
 
@@ -544,9 +592,9 @@ void RealTensorSpace::ComputeExpanTensorLattice(int leigh, int site, int operato
         merge_flag[i] = false;
     merge_quantum_table = new int[num_quantum_];
 
-    for(int i=0;i<operator_num_table;++i) for(int j=0;j<num_leigh_block;++j)
+    for(int i=0;i<operator_num_table;++i) for(int j=0;j<old_num_leigh_block;++j)
     {
-        MergeQuantumTable(merge_quantum_table, operator_quantum_table[i], leigh_quantum_table[leigh_block[j]]);
+        MergeQuantumTable(merge_quantum_table, operator_quantum_table[i], leigh_quantum_table[old_leigh_block[j]]);
         for(int k=0;k<num_leigh_table;++k)
         {
             if(CompareQuantumTable(num_quantum_, merge_quantum_table, leigh_quantum_table[k]) == true)
@@ -579,13 +627,13 @@ void RealTensorSpace::ComputeExpanTensorLattice(int leigh, int site, int operato
     }
 
     // compute mapping_table
-    for(int i=0;i<operator_num_table;++i) for(int j=0;j<num_leigh_block;++j)
+    for(int i=0;i<operator_num_table;++i) for(int j=0;j<old_num_leigh_block;++j)
     {
         mapping_table[i][j] = -1;
-        MergeQuantumTable(merge_quantum_table, operator_quantum_table[i], leigh_quantum_table[leigh_block[j]]);
-        for(int k=0;k<num_leigh_table;++k)
+        MergeQuantumTable(merge_quantum_table, operator_quantum_table[i], leigh_quantum_table[old_leigh_block[j]]);
+        for(int k=0;k<num_leigh_block;++k)
         {
-            if(CompareQuantumTable(num_quantum_, merge_quantum_table, leigh_quantum_table[k]) == true)
+            if(CompareQuantumTable(num_quantum_, merge_quantum_table, leigh_quantum_table[leigh_block[k]]) == true)
             {
                 mapping_table[i][j] = k;
                 break;
@@ -676,8 +724,10 @@ void RealTensorSpace::ReorderQuantumTable(int num_quantum, int num_table, int** 
         for(int j=0;j<num_quantum;++j)
             deviate[i]+=pow(quantum_table[i][j]-mean_quantum[j],2);
     }
+    
     QuickSort(deviate, index, 0, num_table-1, 1);
     ReorderRelevantArray(num_quantum, num_table, quantum_table, index);
+    
     delete[] deviate;
     delete[] index;
 }

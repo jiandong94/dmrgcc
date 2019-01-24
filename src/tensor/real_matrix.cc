@@ -199,7 +199,10 @@ void RealMatrix::ClearMatrix()
 //
 void RealMatrix::RandomMatrix()
 {
-    for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 0.01*(rand()%100);
+    for(int j=0;j<column_;++j)
+        for(int i=0;i<row_;++i)
+            set_matrix_element(i,j,0.01*(rand()%100));
+    //for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 0.01*(rand()%100);
 
 }
 
@@ -221,7 +224,11 @@ void RealMatrix::AddToMatrixElement(int row, int column, double element)
 
 void RealMatrix::AddToMatrix(RealMatrix* tmp_matrix)
 {
-    if(tmp_matrix == nullptr || tmp_matrix->total_element_num_ == 0) return;
+    if(tmp_matrix == nullptr || tmp_matrix->total_element_num_ == 0) 
+    {
+        cout << "tmp_matrix is nullptr in AddToMatrix" << endl;
+        return;
+    }
     if(total_element_num_ == 0)
     {
         row_ = tmp_matrix->row_;
@@ -244,6 +251,38 @@ void RealMatrix::AddToMatrix(RealMatrix* tmp_matrix)
     }
 }
 
+
+void RealMatrix::AddToMatrix(double factor, RealMatrix* tmp_matrix)
+{
+    if(tmp_matrix == nullptr || tmp_matrix->total_element_num_ == 0) 
+    {
+        cout << "tmp_matrix is nullptr in AddToMatrix" << endl;
+        return;
+    }
+    if(total_element_num_ == 0)
+    {
+        row_ = tmp_matrix->row_;
+        column_ = tmp_matrix->column_;
+        total_element_num_ = tmp_matrix->total_element_num_;
+        
+        delete[] matrix_element_;
+        matrix_element_ = new double[total_element_num_];
+        for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 
+                                              factor*tmp_matrix->matrix_element_[i];
+    }
+    else
+    {
+        if(row_ != tmp_matrix->row_ || column_ != tmp_matrix->column_)
+        {
+            cout << "Matrix indeces do not match in AddToMatrix" << endl;
+            exit(-1);
+        }
+        for(int i=0;i<total_element_num_;++i) matrix_element_[i] += 
+                                              factor*tmp_matrix->matrix_element_[i];
+
+    }
+}
+
 void RealMatrix::MultiplyToScalar(double scalar)
 {
     for(int i=0;i<total_element_num_;++i) matrix_element_[i] *= scalar;
@@ -253,7 +292,7 @@ RealMatrix* RealMatrix::MultiplyToMatrix(RealMatrix* tmp_matrix)
 {
     if(column_ != tmp_matrix->row_)
     {
-        cout << "Matrix indeces do not match in MultiplyToMatrix";
+        cout << "Matrix indeces do not match in MultiplyToMatrix" << endl;
         exit(-1);
     }
     CBLAS_LAYOUT layout = CblasRowMajor;
@@ -275,30 +314,30 @@ RealMatrix* RealMatrix::MultiplyToMatrix(RealMatrix* tmp_matrix)
     return result_matrix;
 }
 
-RealMatrix* RealMatrix::MatrixKronProduct(RealMatrix* tmp_matrix_1, RealMatrix* tmp_matrix_2)
+RealMatrix* RealMatrix::MatrixKronProduct(RealMatrix* tmp_matrix)
 {
-    RealMatrix* tmp_matrix;
+    RealMatrix* result_matrix;
     int row, column, position[2];
     double element[2];
     
-    row = tmp_matrix_1->get_row()*tmp_matrix_2->get_row();
-    column = tmp_matrix_1->get_column()*tmp_matrix_2->get_column();
+    row = row_*tmp_matrix->get_row();
+    column = column_*tmp_matrix->get_column();
     if(row==0 || column==0) return nullptr;
-    tmp_matrix = new RealMatrix(row, column);
+    result_matrix = new RealMatrix(row, column);
     
-    for(int i1=0;i1<tmp_matrix_1->get_row();++i1) for(int j1=0;j1<tmp_matrix_1->get_column();++j1)
+    for(int i1=0;i1<row_;++i1) for(int j1=0;j1<column_;++j1)
     {
-        element[0] = tmp_matrix_1->get_matrix_element(i1,j1);
-        for(int i2=0;i2<tmp_matrix_2->get_row();++i2) for(int j2=0;j2<tmp_matrix_2->get_column();++j2)
+        element[0] = get_matrix_element(i1,j1);
+        for(int i2=0;i2<tmp_matrix->get_row();++i2) for(int j2=0;j2<tmp_matrix->get_column();++j2)
         {
-            position[0] = i2+i1*tmp_matrix_2->get_row();
-            position[1] = j2+j1*tmp_matrix_2->get_column();
-            element[1] = tmp_matrix_2->get_matrix_element(i2,j2);
-            tmp_matrix->set_matrix_element(position[0], position[1], element[0]*element[1]);
+            position[0] = i2+i1*tmp_matrix->get_row();
+            position[1] = j2+j1*tmp_matrix->get_column();
+            element[1] = tmp_matrix->get_matrix_element(i2,j2);
+            result_matrix->set_matrix_element(position[0], position[1], element[0]*element[1]);
         }
 
     }
-    return tmp_matrix;
+    return result_matrix;
 }
 
 void RealMatrix::MatrixElementProduct(RealMatrix* tmp_matrix)
@@ -501,10 +540,15 @@ void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
         res_column = column_;
         res_total_element_num = res_row*res_column;
         res_matrix_element = new double[res_total_element_num];
+        for(int i=0;i<res_total_element_num;++i)
+            res_matrix_element[i] = 0.0;
         for(int i=0;i<total_element_num_;++i)
             res_matrix_element[i] = matrix_element_[i];
-        for(int i=0;i<tmp_matrix->total_element_num_;++i)
-            res_matrix_element[total_element_num_+i] = tmp_matrix->matrix_element_[i];
+        if(tmp_matrix->get_matrix_element() != nullptr)
+        {
+            for(int i=0;i<tmp_matrix->total_element_num_;++i)
+                res_matrix_element[total_element_num_+i] = tmp_matrix->matrix_element_[i];
+        }
     }
     else if(flag==1 && row_==tmp_matrix->row_)
     {
@@ -512,12 +556,17 @@ void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
         res_column = column_+tmp_matrix->column_;
         res_total_element_num = res_row*res_column;
         res_matrix_element = new double[res_total_element_num];
+        for(int i=0;i<res_total_element_num;++i)
+            res_matrix_element[i] = 0.0;
         for(int i=0;i<row_;++i) for(int j=0;j<column_;++j)
             res_matrix_element[i*res_column+j] = matrix_element_[i*column_+j];
-        for(int i=0;i<tmp_matrix->row_;++i) for(int j=0;j<tmp_matrix->column_;++j)
+        if(tmp_matrix->get_matrix_element() != nullptr)
         {
-            res_matrix_element[i*res_column+j+column_] = \
-            tmp_matrix->matrix_element_[i*tmp_matrix->column_+j];
+            for(int i=0;i<tmp_matrix->row_;++i) for(int j=0;j<tmp_matrix->column_;++j)
+            {
+                res_matrix_element[i*res_column+j+column_] = \
+                tmp_matrix->matrix_element_[i*tmp_matrix->column_+j];
+            }
         }
     }
     else

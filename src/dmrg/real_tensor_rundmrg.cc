@@ -11,6 +11,10 @@ RealTensorRundmrg::RealTensorRundmrg(RealTensorSpace* space, RealTensorHamiltoni
     strcpy(cache_name_, (char*) cache_name.c_str());
     MkdirCacheFolder(disk_cache_, cache_name_);
     
+    cache_record_ = input.getBool("cache_record");
+    string record_name = input.getString("record_name");
+    strcpy(record_name_, (char*) record_name.c_str());
+    
     cache_resume_ = input.getBool("cache_resume");
     string resume_name = input.getString("resume_name");
     strcpy(resume_name_, (char*) resume_name.c_str());
@@ -42,13 +46,10 @@ RealTensorRundmrg::RealTensorRundmrg(RealTensorSpace* space, RealTensorHamiltoni
         // left canonical
         space_->DefineTensorSpace(first_block, first_dim);
     }
-    
     // hamiltonian
     hamiltonian_->DefineTensorHamiltonian();
-    //hamiltonian_->PrintTensorHamiltonian();
     // network
     network_ = new RealTensorNetwork(space_, hamiltonian_);
-    //network_->PrintTensorNetwork();
 }
 
 RealTensorRundmrg::~RealTensorRundmrg()
@@ -92,6 +93,7 @@ void RealTensorRundmrg::Sweep(InputGroup &table)
         canonical_precision_[i] = canonical_precision_[nlast];
         noise_factor_[i] = noise_factor_[nlast];
     }
+    
     cout << "Sweeps:" << endl;
     for(int i=0;i<num_sweep_;++i)
     {
@@ -101,13 +103,23 @@ void RealTensorRundmrg::Sweep(InputGroup &table)
                                 "Canon=" << canonical_precision_[i] << ", " <<
                                 "Noise=" << noise_factor_[i] << endl;
     }
+
+    for(int i=0;i<num_sweep_;++i)
+        noise_factor_[i] = pow(0.1, noise_factor_[i]);
 }
 
 void RealTensorRundmrg::Run()
 {
+    RealTensorLanczos* lanczos;
     ofstream process_file;
     double start_time, end_time;
-
+    double energy;
+    char label[512], tensor_name[512], record_name[512];
+    int dummy;
+    cout.setf(ios::fixed);
+    cout.precision(12);
+    
+    start_time = get_wall_time();
     //process_file.open(process_name_, ios::binary|ios::app|ios::out);
     //process_file.precision(14);
     
@@ -115,6 +127,120 @@ void RealTensorRundmrg::Run()
     // compute right contraction
     Initialize();
     
+    lanczos = new RealTensorLanczos(space_, hamiltonian_, network_);
+    // begin sweep
+    int left = 0;
+    int right = 1;
+    
+    for(int i=0;i<num_sweep_/2;++i)
+    {
+        cout<<"------------------------ sweep="<<i<<" ------------------------"<<endl;
+        // sweep from left to right
+        space_->DefineTensorSpaceParameter(max_block_[2*i], max_dim_[2*i], 
+                canonical_precision_[2*i], noise_factor_[2*i]);
+        
+        for(int j=0;j<num_site_mm_;++j)
+        {
+            lanczos->LanczosMethod(num_iter_[2*i], j, energy);
+            
+            network_->ResetTensorNetwork(right, j);
+            network_->RemoveTensorNetwork(right, j);
+
+            // subspace expansion
+            //cout << "before psi_dim: " << space_->get_tensor_lattice(j)->ComputeKetTensorDim() << endl;            
+            network_->ExpanTensorNetwork(left, j);
+            space_->ExpanTensorSpace(left, j);
+            //cout << "after psi_dim: " << space_->get_tensor_lattice(j)->ComputeKetTensorDim() << endl;            
+            // left canonical
+            space_->CanonicalTensorSpace(left, j);
+            
+            // compute L tensor 
+            network_->ComputeTensorNetwork(left, j);
+
+            if(disk_cache_ == true)
+            {
+                space_->RecordTensorSpace(j);
+                space_->ResetTensorSpace(j);
+
+                network_->RecordTensorNetwork(left, j);
+                network_->ResetTensorNetwork(left, j);
+
+                space_->ResumeTensorSpace(j+1);
+                network_->ResumeTensorNetwork(right, j+1);
+            }
+
+            space_->MatchTensorSpace(left, j+1);
+            space_->MergeTensorSpace(left, j+1);
+            //space_->get_tensor_lattice(j+1)->PrintTensorLattice();
+        }
+         
+        cout << "right energy = " << energy << endl;
+
+        // sweep from right to left
+        space_->DefineTensorSpaceParameter(max_block_[2*i+1], max_dim_[2*i+1], 
+                canonical_precision_[2*i+1], noise_factor_[2*i+1]);
+        
+        for(int j=num_site_mm_;j>0;--j)
+        {
+            lanczos->LanczosMethod(num_iter_[2*i+1], j, energy);
+
+            network_->ResetTensorNetwork(left, j);
+            network_->RemoveTensorNetwork(left, j);
+
+            // subspace expansion
+            network_->ExpanTensorNetwork(right, j);
+            space_->ExpanTensorSpace(right, j);
+            
+            // right canonical
+            space_->CanonicalTensorSpace(right, j);
+            
+            // compute R tensor 
+            network_->ComputeTensorNetwork(right, j);
+
+            if(disk_cache_ == true)
+            {
+                space_->RecordTensorSpace(j);
+                space_->ResetTensorSpace(j);
+
+                network_->RecordTensorNetwork(right, j);
+                network_->ResetTensorNetwork(right, j);
+
+                space_->ResumeTensorSpace(j-1);
+                network_->ResumeTensorNetwork(left, j-1);
+            }
+
+            space_->MatchTensorSpace(right, j-1);
+            space_->MergeTensorSpace(right, j-1);
+        }
+        
+        cout << "left energy = " << energy << endl;
+
+        if(disk_cache_ == true)
+        {
+            sprintf(label, "rm -rf %s/TensorSpace_sweep_*.dat", cache_name_);
+            dummy = system(label);
+ 
+            sprintf(tensor_name, "%s/TensorSpace_sweep_%d.dat", cache_name_, i);
+            space_->RecordTensorSpace(0);
+            space_->WriteTensorSpace(tensor_name);
+            space_->ResumeTensorSpace(0);
+        }
+
+        if(cache_record_ == true)
+        {
+            sprintf(record_name, "%s/%s", cache_name_, record_name_);
+            space_->WriteTensorSpace(record_name);
+        }
+
+        if(disk_cache_ == true)
+        {
+            sprintf(label, "rm -rf %s/TensorSpace_sweep_*.dat", cache_name_);
+            dummy = system(label);
+        }
+
+    }
+    end_time = get_wall_time();
+    cout << "Total Time : " << (double)(end_time-start_time) << " s" << endl;
 
 }
 
@@ -127,7 +253,6 @@ void RealTensorRundmrg::Initialize()
     // initialize L and R tensors
     // record the first and the last L and R tensors
     network_->DefineTensorNetwork();
-    
     // resume the last lattice
     // resume the fiest and the last L and R tensor
     if(disk_cache_ == true)
@@ -137,7 +262,6 @@ void RealTensorRundmrg::Initialize()
         network_->ResumeTensorNetwork(right, num_site_mm_);
         network_->ResumeTensorNetwork(left, 0);
     }
-    
     // right canonical lattice and compute R tensors
     // and record them
     for(int i=num_site_mm_;i>0;--i)

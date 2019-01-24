@@ -48,7 +48,7 @@ void BoseHubbardSpace::DefineQuantumTable()
             min_final = max(min_from_left, min_from_right);
             max_final = min(max_from_left, max_from_right);
 
-            mean_quantum = num_boson_/num_site_*i;
+            mean_quantum = (double)num_boson_/num_site_*i;
         }
         num_table_[i] = max_final - min_final+1;
         quantum_table_[i] = new int* [num_table_[i]];

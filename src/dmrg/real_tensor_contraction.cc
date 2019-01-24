@@ -309,7 +309,7 @@ void RealTensorContraction::LeftExpanTensorContraction(RealTensorLattice* tensor
             expan_tensor_lattice->physics_index_[i][j] = physics_index[i][j];
         }
     }
-
+    
     // re-construct ket_tensor for expan_lattice
     delete expan_tensor_lattice->ket_tensor_;
     num_block = 0;
@@ -380,7 +380,9 @@ void RealTensorContraction::LeftExpanTensorContraction(RealTensorLattice* tensor
             if(expan_dim[1] > max_expan) expan_dim[1] = max_expan;
 
             tmp_tensor[2] = new RealMatrix(expan_dim[0], expan_dim[1]);
-
+            //cout << "Liden: " << min(expan_dim[0], expan_dim[1]) << endl;
+            //cout << "total element: " << tmp_tensor[2]->get_total_element_num() << endl;
+            
             for(int o2=0;o2<right_bond;++o2)
             {
                 ldx = expan_table[o2][jdx];
@@ -411,7 +413,7 @@ void RealTensorContraction::LeftExpanTensorContraction(RealTensorLattice* tensor
         }
     }
     delete[] num_same_index;
-    for(int i=0;i<num_right_block;++i)
+    for(int i=0;i<num_left_block;++i)
         delete[] position_same_index[i];
     delete position_same_index;
 
@@ -786,7 +788,7 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
     int left_bond, right_bond, num_left_block, num_right_block;
     int p1, p2, idx, jdx, kdx, ldx, index, position;
     double element;
-
+    
     left_bond = tensor_operator->get_left_bond();
     right_bond = tensor_operator->get_right_bond();
     num_left_block = tensor_lattice->get_num_left_block();
@@ -919,10 +921,10 @@ void RealTensorContraction::LeftComputeTensorContraction(RealTensorLattice* tens
                     if(element != 0.0) 
                     {
                         // L*B*K*W
-                        second_tensor->MultiplyToScalar(element);
                         position = tensor_contraction->left_contraction_tensor_[o2]->FindMatrixBlock(idx, jdx);
                         // matrix_block == nullptr?
-                        tensor_contraction->left_contraction_tensor_[o2]->AddToMatrixBlock(position, second_tensor);
+                        tensor_contraction->left_contraction_tensor_[o2]->
+                                            AddToMatrixBlock(position, element, second_tensor);
                     }
                 }
                 delete second_tensor;
@@ -1071,7 +1073,6 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
         ldx = right_contraction_tensor_[o2]->left_index_[i];
         kdx = right_contraction_tensor_[o2]->right_index_[i];
         tmp_tensor[0] = right_contraction_tensor_[o2]->get_matrix_block(i);
-
         if(tmp_tensor[0]->get_row() == 0) continue;
         for(int l=0;l<num_same_index[ldx];++l)
         {
@@ -1081,6 +1082,7 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
             // K*R (a_1, b_1)*(b_1, b_0) = (a_1, b_0)
             tmp_tensor[1] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[ldx][l]];
             first_tensor = tmp_tensor[1]->MultiplyToMatrix(tmp_tensor[0]);
+            
             for(int k=0;k<num_same_index[kdx];++k)
             {
                 idx = tensor_lattice->ket_tensor_->left_index_[position_same_index[kdx][k]];
@@ -1090,16 +1092,18 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
                 bra_tensor = tmp_tensor[2]->TransposeMatrix();
                 second_tensor = first_tensor->MultiplyToMatrix(bra_tensor);
                 delete bra_tensor;
+                
                 for(int o1=0;o1<left_bond;++o1)
                 {
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
                     if(element != 0.0) 
                     {
                         // K*R*B*W
-                        second_tensor->MultiplyToScalar(element);
                         position = tensor_contraction->right_contraction_tensor_[o1]->FindMatrixBlock(jdx, idx);
+                        
                         // if matrix is nullptr, replace it
-                        tensor_contraction->right_contraction_tensor_[o1]->AddToMatrixBlock(position, second_tensor);
+                        tensor_contraction->right_contraction_tensor_[o1]->
+                                            AddToMatrixBlock(position, element, second_tensor);
                     }
                 }
                 delete second_tensor;
@@ -1107,7 +1111,7 @@ void RealTensorContraction::RightComputeTensorContraction(RealTensorLattice* ten
             delete first_tensor;
         }
     }
-
+    
     delete[] num_same_index;
     for(int i=0;i<num_right_block;++i)
         delete[] position_same_index[i];
@@ -1162,7 +1166,7 @@ void RealTensorContraction::ComputeEffectHamilton(RealTensorLattice* tensor_latt
 
             if(tmp_tensor[1]->get_row() == 0) continue;
             
-            // if exit (p1,i,j) and (p2,k,l)
+            // if exist (p1,i,j) and (p2,k,l)
             position[0] = tensor_lattice->ket_tensor_->FindMatrixBlock(idx, jdx);
             position[1] = tensor_lattice->ket_tensor_->FindMatrixBlock(kdx, ldx);
 
@@ -1174,7 +1178,7 @@ void RealTensorContraction::ComputeEffectHamilton(RealTensorLattice* tensor_latt
                 if(element != 0)
                 {
                     inv_tensor = tmp_tensor[1]->TransposeMatrix();
-                    result_tensor = tmp_tensor[0]->MultiplyToMatrix(inv_tensor);
+                    result_tensor = tmp_tensor[0]->MatrixKronProduct(inv_tensor);
                     delete inv_tensor;
 
                     if(result_tensor != nullptr)
@@ -1235,7 +1239,7 @@ void RealTensorContraction::MultiplyEffectHamilton(RealTensorLattice* tensor_lat
     // for each right index(block), find all possible left indiced(blocks)
     num_same_index = new int[num_right_block];
     position_same_index = new int* [num_right_block];
-    for(int i=0;i<num_left_block;++i)
+    for(int i=0;i<num_right_block;++i)
         tensor_lattice->ket_tensor_->FindMatrixBlock(num_same_index[i], position_same_index[i], 1, i);
 
     // compute right_contraction_tensor
@@ -1273,7 +1277,7 @@ void RealTensorContraction::MultiplyEffectHamilton(RealTensorLattice* tensor_lat
                             second_tensor->MultiplyToScalar(element);
                             matrix_element = second_tensor->get_matrix_element();
                             total_element_num = second_tensor->get_total_element_num();
-                            for(int a=0;a<total_element_num;++a) state[part_dim+a] = matrix_element[a];
+                            for(int a=0;a<total_element_num;++a) state[part_dim+a] += matrix_element[a];
                             delete second_tensor;
                         }
                     }

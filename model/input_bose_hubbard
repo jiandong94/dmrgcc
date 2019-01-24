@@ -1,22 +1,24 @@
 input
 {
-    num_site_x = 2
+    num_site_x = 10
     num_site_y = 2
-    num_boson = 1
-    physics_dim = 2
-    flux = 0.5
-    Jx = -1
-    Jy = -1.3
-    U = 10
+    num_boson = 5
+    physics_dim = 3
+    flux = 0.4
+    Jx = -1.0
+    Jy = -1.2
+    U = 4
     mu = 0.0
     period_x = false
     period_y = false
 
     disk_cache = false
     cache_name = bose_hubbard
+    cache_record = false
+    record_name = test.dat
     cache_resume = false
     resume_name = 
-    record_process = true
+    record_process = false
     process_name = bose_hubbard
     
     first_block = 20

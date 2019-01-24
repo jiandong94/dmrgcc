@@ -12,7 +12,8 @@ OBJ_DIR = $(ROOT_DIR)/obj
 SUBDIRS=$(shell ls -l | grep ^d | awk '{if($$9 == "src") print $$9}')
 
 CC = g++
-CFLAGS = -fopenmp -m64 -std=c++11 -fPIC -O4 -msse2 -msse3 -msse4 
+CFLAGS = -fopenmp -m64 -std=c++11 -fPIC -O2 -msse2 -msse3 -msse4 
+#CFLAGS = -fopenmp -std=c++11 -m64 -fPIC -O3
 #CFLAGS = -fopenmp -m64 -std=c++11 -fPIC -g
 MKL_INCLUDE_PATH = /opt/intel/mkl/include 
 MKL_LIBRARY_PATH = /opt/intel/mkl/lib/intel64 -Wl,--start-group -lmkl_gnu_thread -lmkl_core -lmkl_intel_lp64 -Wl,--end-group
@@ -35,5 +36,5 @@ ECHO:
 	@echo $(SUBDIRS)
 
 clean:
-	@rm $(OBJ_DIR)/*.o
-	@rm $(BIN_DIR)/*
+	@rm -rf $(OBJ_DIR)/*.o
+	@rm -rf $(BIN_DIR)/*

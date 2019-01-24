@@ -12,7 +12,6 @@ BoseHubbardHamiltonian::BoseHubbardHamiltonian(int num_site_x, int num_site_y, i
     flux_value_ = flux_value;
     hop_x_ = hop_x;
     hop_y_ = hop_y;
-    cout << "hop_y " << hop_y << endl;
     inter_value_ = inter_value;
     chemical_value_ = chemical_value;
     
@@ -201,6 +200,7 @@ void BoseHubbardHamiltonian::DefineTensorHamiltonian()
             {
                 DefineHamiltonian1(p[1], p[0], hop_x_);
                 DefineHamiltonian2(p[1], p[0], hop_x_);
+                cout << "test" << endl;
             }
         }
         if(hop_y_ != 0)
@@ -225,4 +225,5 @@ void BoseHubbardHamiltonian::DefineTensorHamiltonian()
     
         ParallelTensorHamiltonian();
     }
+    //PrintTensorHamiltonian();
 }

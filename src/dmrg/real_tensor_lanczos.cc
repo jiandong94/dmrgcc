@@ -30,7 +30,6 @@ void RealTensorLanczos::LanczosMethod(int num_iter, int site, double& result_val
     zero_tolerance = 1E-15;
 
     psi_dim = tensor_lattice->ComputeKetTensorDim();
-
     // exact diagonalize
     if(psi_dim < 100)
     {
@@ -40,9 +39,8 @@ void RealTensorLanczos::LanczosMethod(int num_iter, int site, double& result_val
         {
             eigenvector[i*psi_dim+j] = 0.0;
         }
-
+        
         tensor_contraction->ComputeEffectHamilton(tensor_lattice, tensor_operator, eigenvector);
-
         RealSymMatrixDiag(eigenvector, eigenvalue, psi_dim);
         
         result_value = eigenvalue[0];
@@ -79,6 +77,7 @@ void RealTensorLanczos::LanczosMethod(int num_iter, int site, double& result_val
 
         for(int i=0;i<lanczos_iter;++i)
         {
+            //tensor_lattice->PrintTensorLattice();
             tensor_contraction->MultiplyEffectHamilton(tensor_lattice, tensor_operator, h_psi);
             // d = <psi|H|psi>
             VectorMultiply(psi[i], h_psi, psi_dim, diagonal_element[i]);
@@ -106,7 +105,7 @@ void RealTensorLanczos::LanczosMethod(int num_iter, int site, double& result_val
             // diagonalize the tridiagonal matrix
             RealSymMatrixDiag(eigenvector, eigenvalue, lanczos_dim);
             new_energy = eigenvalue[0];
-
+            
             if(subdiagonal_element[i]<zero_tolerance || 
                fabs(new_energy-old_energy)<lanczos_precision ||
                lanczos_dim == lanczos_iter)
@@ -116,7 +115,7 @@ void RealTensorLanczos::LanczosMethod(int num_iter, int site, double& result_val
                 for(int j=0;j<psi_dim;++j)
                 {
                     result_vector[j] = 0.0;
-                    for(int k=0;k<lanczos_dim;++j)
+                    for(int k=0;k<lanczos_dim;++k)
                     {
                         result_vector[j] += psi[k][j]*eigenvector[k*lanczos_dim];
                     }

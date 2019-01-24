@@ -217,6 +217,19 @@ int main()
     }
     cout << "transfer_tensor: " << endl;
     transfer_tensor->PrintMatrix();
+    delete matrix;
+    
+    cout << endl;
+    cout << "10. MatrixKronProduct" << endl;
+    matrix = new RealMatrix(2,2);
+    matrix->set_matrix_element(0,0,1);
+    matrix->set_matrix_element(0,1,2);
+    matrix->set_matrix_element(1,0,3);
+    matrix->set_matrix_element(1,1,4);
+    matrix->PrintMatrix();
+    matrix->MatrixKronProduct(matrix)->PrintMatrix();
+
+    delete matrix;
 
     return 0;
 }

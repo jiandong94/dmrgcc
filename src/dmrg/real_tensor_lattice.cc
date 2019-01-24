@@ -149,6 +149,11 @@ RealMatrixBlock* RealTensorLattice::get_canonical_tensor()
     return canonical_tensor_;
 }
 
+int* RealTensorLattice::get_match_dim()
+{
+    return match_dim_;
+}
+
 int RealTensorLattice::ComputeLatticeDim(int leigh)
 {
     int bond_dim = 0;
@@ -287,6 +292,9 @@ void RealTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
     }
     ket_tensor_ = new RealMatrixBlock();
     ket_tensor_->ReadMatrixBlock(tensor_lattice_file);
+
+    match_dim_ = nullptr;
+    canonical_tensor_ = nullptr;
 }
 
 void RealTensorLattice::DefineTensorLattice(int num_left_block, int num_right_block, 
@@ -428,7 +436,7 @@ void RealTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block, in
     
     leigh_block = new int[num_leigh_block];
     leigh_dim = new int[num_leigh_block];
-    for(int i=0;i<tmp_num_leigh_block[0];++i) leigh_dim[i] = tmp_leigh_dim[0][i];
+    for(int i=0;i<tmp_num_leigh_block[0];++i) leigh_block[i] = tmp_leigh_block[0][i];
     // compute new leigh_block and leigh_dim
     int k = tmp_num_leigh_block[0];
     for(int j=0;j<tmp_num_leigh_block[1];++j)
@@ -439,19 +447,40 @@ void RealTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block, in
             if(tmp_leigh_block[0][i] == tmp_leigh_block[1][j])
             {
                 flag = true;
-                leigh_dim[i] += tmp_leigh_dim[1][j];
                 break;
             }
         }
         if(flag = false)
         {
             leigh_block[k] = tmp_leigh_block[1][j];
-            leigh_dim[k] = tmp_leigh_dim[1][j];
             k++;
         }
     }
     // reorder leigh_block ascending depend on leigh_block
-    QuickSort(leigh_block, leigh_dim, 0, num_leigh_block-1, 1);
+    QuickSort(leigh_block, 0, num_leigh_block-1, 1);
+    
+    for(int i=0;i<num_leigh_block;++i)
+    {
+        leigh_dim[i] = 0;
+        for(int j=0;j<tmp_num_leigh_block[0];++j)
+        {
+            if(leigh_block[i] == tmp_leigh_block[0][j])
+            {
+                leigh_dim[i] += tmp_leigh_dim[0][j];
+                break;
+            }
+        }
+
+        for(int j=0;j<tmp_num_leigh_block[1];++j)
+        {
+            if(leigh_block[i] == tmp_leigh_block[1][j])
+            {
+                leigh_dim[i] += tmp_leigh_dim[1][j];
+                break;
+            }
+        }
+    }
+
 }
 
 void RealTensorLattice::ResetTensorLattice()
@@ -774,6 +803,7 @@ void RealTensorLattice::RightCanonicalTensorLattice(int max_dim, double canonica
     singular_value = new double* [num_left_block_];
     singular_dim = new int[num_left_block_];
     truncate_dim = new int[num_left_block_];
+    
     // do SVD decomposition for every left block number
     //
     for(int l=0;l<num_left_block_;++l)
@@ -871,6 +901,7 @@ void RealTensorLattice::RightCanonicalTensorLattice(int max_dim, double canonica
         delete[] singular_value[l];
         delete block_tensor;
     }
+
     delete[] left_singular_tensor;
     delete[] right_singular_tensor;
     delete[] singular_value;
@@ -948,14 +979,14 @@ void RealTensorLattice::LeftExpanTensorLattice(RealTensorLattice* tmp_tensor_lat
         RealTensorLattice* expan_tensor_lattice)
 {
     RealMatrix *origin_tensor, *tmp_tensor, *expan_tensor;
-    int position, enable_expan[2], position_expan[2];
+    int position, enable_expan[2], position_expan[2], expan_dim;
 
     for(int r=0;r<num_right_block_;++r)
     {
         enable_expan[0] = -1;
         for(int i=0;i<tmp_tensor_lattice->num_right_block_;++i)
         {
-            if(right_block_[i] == tmp_tensor_lattice->right_block_[i])
+            if(right_block_[r] == tmp_tensor_lattice->right_block_[i])
             {
                 enable_expan[0] = i;
                 break;
@@ -967,14 +998,13 @@ void RealTensorLattice::LeftExpanTensorLattice(RealTensorLattice* tmp_tensor_lat
         {
             for(int i=0;i<expan_tensor_lattice->num_right_block_;++i)
             {
-                if(right_block_[i] == expan_tensor_lattice->right_block_[i])
+                if(right_block_[r] == expan_tensor_lattice->right_block_[i])
                 {
                     enable_expan[1] = i;
                     break;
                 }
             }
         }
-
         for(int l=0;l<num_left_block_;++l)
         {
             position = ket_tensor_->FindMatrixBlock(l, r);
@@ -1005,11 +1035,22 @@ void RealTensorLattice::LeftExpanTensorLattice(RealTensorLattice* tmp_tensor_lat
 
                 if(enable_expan[0]!=-1 && enable_expan[1]==-1)
                 {
-                    cout << "enable_expan[0]!=-1 && enable_expan[1]==-1 in LeftExpanTensorLattice!" << endl;
+                    expan_dim = right_dim_[r] - origin_tensor->get_column();
+                    if(expan_dim < 0)
+                    {
+                        error("expan_dim < 0 in LeftExpanTensorLattice");
+                    }
+                    expan_tensor = new RealMatrix(left_dim_[l], expan_dim);
+                    origin_tensor->ExpanMatrix(1, expan_tensor);
+                    delete expan_tensor;
+                    //cout << "enable_expan[0]!=-1 && enable_expan[1]==-1 in LeftExpanTensorLattice!" << endl;
                 }
                 if(enable_expan[0]==-1 && enable_expan[1]==-1)
                 {
-                    cout << "enable_expan[0]==-1 && enable_expan[1]==-1 in LeftExpanTensorLattice!" << endl;
+                    tmp_tensor = new RealMatrix(left_dim_[l], right_dim_[r]);
+                    origin_tensor->AddToMatrix(tmp_tensor);
+                    delete tmp_tensor;
+                    //cout << "enable_expan[0]==-1 && enable_expan[1]==-1 in LeftExpanTensorLattice!" << endl;
                 }
             }
         }
@@ -1021,14 +1062,14 @@ void RealTensorLattice::RightExpanTensorLattice(RealTensorLattice* tmp_tensor_la
         RealTensorLattice* expan_tensor_lattice)
 {
     RealMatrix *origin_tensor, *tmp_tensor, *expan_tensor;
-    int position, enable_expan[2], position_expan[2];
+    int position, enable_expan[2], position_expan[2], expan_dim;
 
     for(int l=0;l<num_left_block_;++l)
     {
         enable_expan[0] = -1;
         for(int i=0;i<tmp_tensor_lattice->num_left_block_;++i)
         {
-            if(left_block_[i] == tmp_tensor_lattice->left_block_[i])
+            if(left_block_[l] == tmp_tensor_lattice->left_block_[i])
             {
                 enable_expan[0] = i;
                 break;
@@ -1040,7 +1081,7 @@ void RealTensorLattice::RightExpanTensorLattice(RealTensorLattice* tmp_tensor_la
         {
             for(int i=0;i<expan_tensor_lattice->num_left_block_;++i)
             {
-                if(left_block_[i] == expan_tensor_lattice->left_block_[i])
+                if(left_block_[l] == expan_tensor_lattice->left_block_[i])
                 {
                     enable_expan[1] = i;
                     break;
@@ -1078,11 +1119,22 @@ void RealTensorLattice::RightExpanTensorLattice(RealTensorLattice* tmp_tensor_la
 
                 if(enable_expan[0]!=-1 && enable_expan[1]==-1)
                 {
-                    cout << "enable_expan[0]!=-1 && enable_expan[1]==-1 in RightExpanTensorLattice!" << endl;
+                    expan_dim = left_dim_[l] - origin_tensor->get_row();
+                    if(expan_dim < 0)
+                    {
+                        error("expan_dim < 0 in RightExpanTensorLattice");
+                    }
+                    expan_tensor = new RealMatrix(expan_dim, right_dim_[r]);
+                    origin_tensor->ExpanMatrix(0, expan_tensor);
+                    delete expan_tensor;
+                   //cout << "enable_expan[0]!=-1 && enable_expan[1]==-1 in RightExpanTensorLattice!" << endl;
                 }
                 if(enable_expan[0]==-1 && enable_expan[1]==-1)
                 {
-                    cout << "enable_expan[0]==-1 && enable_expan[1]==-1 in RightExpanTensorLattice!" << endl;
+                    tmp_tensor = new RealMatrix(left_dim_[l], right_dim_[r]);
+                    origin_tensor->AddToMatrix(tmp_tensor);
+                    delete tmp_tensor;
+                    //cout << "enable_expan[0]==-1 && enable_expan[1]==-1 in RightExpanTensorLattice!" << endl;
                 }
             }
         }

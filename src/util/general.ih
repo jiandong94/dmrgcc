@@ -61,3 +61,58 @@ void QuickSort(T* array, int* index, int left, int right, int flag)
 	}
 }
 
+
+template <typename T>
+void QuickSort(T* array, int left, int right, int flag)
+{
+	if(left < right)
+	{
+        int i = left, j = right;
+        T array_privot = array[i];
+        // descending
+        if(flag == 0)
+        {
+            while(i < j)
+            {
+                while(i<j && array[j]<=array_privot)
+                    j--;
+                if(i < j)
+                {
+                    array[i] = array[j];
+                    i++;
+                }
+                while(i<j && array[i]>=array_privot)
+                    i++;
+                if(i < j)
+                {
+                    array[j] = array[i];
+                    j--;
+                }
+            }
+        }
+        // ascending
+        else if(flag = 1)
+        {
+            while(i < j)
+            {
+                while(i<j && array[j]>=array_privot)
+                    j--;
+                if(i < j)
+                {
+                    array[i] = array[j];
+                    i++;
+                }
+                while(i<j && array[i]<=array_privot)
+                    i++;
+                if(i < j)
+                {
+                    array[j] = array[i];
+                    j--;
+                }
+            }
+        }
+		array[i] = array_privot;
+		QuickSort(array, left, i-1, flag);
+		QuickSort(array, i+1, right, flag);
+	}
+}

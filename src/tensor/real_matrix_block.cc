@@ -82,7 +82,7 @@ RealMatrixBlock::RealMatrixBlock(RealMatrixBlock* tmp_matrix_block)
        {
            left_index_[i] = tmp_matrix_block->left_index_[i];
            right_index_[i] = tmp_matrix_block->right_index_[i];
-           matrix_block_[i] = tmp_matrix_block->matrix_block_[i];
+           matrix_block_[i] = new RealMatrix(tmp_matrix_block->matrix_block_[i]);
        }
    }
    else
@@ -290,11 +290,11 @@ void RealMatrixBlock::ResetMatrixBlock()
 
 }
 
-void RealMatrixBlock::AddToMatrixBlock(int position, RealMatrix* tmp_matrix)
+void RealMatrixBlock::AddToMatrixBlock(int position, double factor, RealMatrix* tmp_matrix)
 {
     if(matrix_block_ != nullptr)
     {
-        matrix_block_[position]->AddToMatrix(tmp_matrix);
+        matrix_block_[position]->AddToMatrix(factor, tmp_matrix);
     }
 }
 

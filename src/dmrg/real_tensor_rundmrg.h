@@ -1,7 +1,7 @@
 #ifndef DMRGCC_DMRG_REAL_TENSOR_RUNDMRG_H_
 #define DMRGCC_DMRG_REAL_TENSOR_RUNDMRG_H_
 
-#include "dmrg/real_tensor_network.h"
+#include "dmrg/real_tensor_lanczos.h"
 #include "util/input.h"
 class RealTensorRundmrg
 {
@@ -15,6 +15,8 @@ class RealTensorRundmrg
 
     bool disk_cache_;
     char cache_name_[512];
+    bool cache_record_;
+    char record_name_[512];
     bool cache_resume_;
     char resume_name_[512];
     bool record_process_;

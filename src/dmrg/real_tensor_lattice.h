@@ -100,6 +100,10 @@ class RealTensorLattice
 
     //
     //
+    int* get_match_dim();
+    
+    //
+    //
     int ComputeLatticeDim(int leigh);
 
     //
