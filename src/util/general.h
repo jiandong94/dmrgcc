@@ -23,6 +23,7 @@ using std::endl;
 using std::ofstream;
 using std::ifstream;
 using std::istream;
+using std::ostream;
 using std::string;
 
 // Computes a matrix-matrix product with general matrices.
