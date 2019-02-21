@@ -10,10 +10,10 @@ int main()
     cout << "complex2: " << complex2 << endl;
 
     cout << "------------------------" << endl;
-    cout << "complex1.real: " << complex1.Real() << endl;
-    cout << "complex1.imag: " << complex1.Imag() << endl;
-    cout << "complex1.norm: " << complex1.Norm() << endl;
-    cout << "complex1.squre_norm: " << complex1.SquareNorm() << endl;
+    cout << "complex1.real: " << Real(complex1) << endl;
+    cout << "complex1.imag: " << Imag(complex1) << endl;
+    cout << "complex1.norm: " << Norm(complex1) << endl;
+    cout << "complex1.squre_norm: " << SquareNorm(complex1) << endl;
 
     cout << "-----------------------" << endl;
     cout << "complex1+complex2: " << complex1+complex2 << endl;

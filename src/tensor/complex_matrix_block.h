@@ -1,11 +1,11 @@
-#ifndef DMRGCC_TENSOR_REAL_MATRIX_BLOCK_H_
-#define DMRGCC_TENSOR_REAL_MATRIX_BLOCK_H_
+#ifndef DMRGCC_TENSOR_COMPLEX_MATRIX_BLOCK_H_
+#define DMRGCC_TENSOR_COMPLEX_MATRIX_BLOCK_H_
 
-#include "tensor/real_matrix.h"
+#include "tensor/complex_matrix.h"
 
-class RealMatrixBlock
+class ComplexMatrixBlock
 {
-    friend class RealTensorContraction;
+    friend class ComplexTensorContraction;
     protected:
 
     int num_block_;
@@ -13,29 +13,29 @@ class RealMatrixBlock
     int* left_index_;
     int* right_index_;
 
-    RealMatrix** matrix_block_;
+    ComplexMatrix** matrix_block_;
 
 
     public:
 
     // constructor
     //
-    RealMatrixBlock();
+    ComplexMatrixBlock();
 
     // constructor
-    RealMatrixBlock(int num_block);
-
-    // constructor
-    //
-    RealMatrixBlock(int num_block, int* left_index, int* right_index);
+    ComplexMatrixBlock(int num_block);
 
     // constructor
     //
-    RealMatrixBlock(RealMatrixBlock* tmp_matrix_block);
+    ComplexMatrixBlock(int num_block, int* left_index, int* right_index);
+
+    // constructor
+    //
+    ComplexMatrixBlock(ComplexMatrixBlock* tmp_matrix_block);
 
     // destructor
     //
-    ~RealMatrixBlock();
+    ~ComplexMatrixBlock();
 
     // 
     //
@@ -51,11 +51,11 @@ class RealMatrixBlock
 
     //
     //
-    RealMatrix* get_matrix_block(int position);
+    ComplexMatrix* get_matrix_block(int position);
 
     //
     //
-    void set_matrix_block(int position, RealMatrix* tmp_matrix);
+    void set_matrix_block(int position, ComplexMatrix* tmp_matrix);
 
     // compute the total dimension of matrices
     //
@@ -72,8 +72,8 @@ class RealMatrixBlock
     void NormalizeMatrixBlock();
 
     //
-    // why not use double* &state
-    void VectorizeMatrixBlock(bool direction, double* state);
+    // 
+    void VectorizeMatrixBlock(bool direction, Complex* state);
 
     //
     //
@@ -101,11 +101,11 @@ class RealMatrixBlock
 
     //
     //
-    void AddToMatrixBlock(int position, double factor, RealMatrix* tmp_matrix);
+    void AddToMatrixBlock(int position, Complex factor, ComplexMatrix* tmp_matrix);
 
     //
     //
-    void MultiplyToScalar(double scalar);
+    void MultiplyToScalar(Complex scalar);
 
     // return position
     //

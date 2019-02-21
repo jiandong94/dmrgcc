@@ -1,7 +1,7 @@
-#include "tensor/real_matrix.h"
+#include "tensor/complex_matrix.h"
 
 // constructor
-RealMatrix::RealMatrix()
+ComplexMatrix::ComplexMatrix()
 {
     row_ = 0;
     column_ = 0;
@@ -12,7 +12,7 @@ RealMatrix::RealMatrix()
 
 // constructor
 //
-RealMatrix::RealMatrix(int row, int column)
+ComplexMatrix::ComplexMatrix(int row, int column)
 {
     row_ = row;
     column_ = column;
@@ -20,7 +20,7 @@ RealMatrix::RealMatrix(int row, int column)
 
     if(total_element_num_ > 0)
     {
-        matrix_element_ = new double[total_element_num_];
+        matrix_element_ = new Complex[total_element_num_];
         for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 0.0;
     }
     else matrix_element_ = nullptr;
@@ -28,7 +28,7 @@ RealMatrix::RealMatrix(int row, int column)
 }
 
 // copy
-RealMatrix::RealMatrix(RealMatrix* tmp_matrix)
+ComplexMatrix::ComplexMatrix(ComplexMatrix* tmp_matrix)
 {
     row_ = tmp_matrix->row_;
     column_ = tmp_matrix->column_;
@@ -36,7 +36,7 @@ RealMatrix::RealMatrix(RealMatrix* tmp_matrix)
 
     if(total_element_num_ > 0)
     {
-        matrix_element_ = new double[total_element_num_];
+        matrix_element_ = new Complex[total_element_num_];
         for(int i=0;i<total_element_num_;++i) matrix_element_[i] = tmp_matrix->matrix_element_[i];
     }
     else matrix_element_ = nullptr;
@@ -46,35 +46,35 @@ RealMatrix::RealMatrix(RealMatrix* tmp_matrix)
 
 // destructor
 //
-RealMatrix::~RealMatrix()
+ComplexMatrix::~ComplexMatrix()
 {
     delete[] matrix_element_;
 }
 
 // get row number
 //
-int RealMatrix::get_row()
+int ComplexMatrix::get_row()
 {
     return row_;
 }
 
 // get column number
 //
-int RealMatrix::get_column()
+int ComplexMatrix::get_column()
 {
     return column_;
 }
 
 // get total element number
 //
-int RealMatrix::get_total_element_num()
+int ComplexMatrix::get_total_element_num()
 {
     return total_element_num_;
 }
 
 // set matrix element
 //
-void RealMatrix::set_matrix_element(int row, int column, double element)
+void ComplexMatrix::set_matrix_element(int row, int column, Complex element)
 {
     if(row >= row_ || column >= column_)
     {
@@ -87,7 +87,7 @@ void RealMatrix::set_matrix_element(int row, int column, double element)
 
 // get a matrix element
 //
-double RealMatrix::get_matrix_element(int row, int column)
+Complex ComplexMatrix::get_matrix_element(int row, int column)
 {
     if(row >= row_ || column >= column_)
     {
@@ -100,13 +100,13 @@ double RealMatrix::get_matrix_element(int row, int column)
 
 // get matrix elements
 //
-double* RealMatrix::get_matrix_element()
+Complex* ComplexMatrix::get_matrix_element()
 {
     return matrix_element_;
 }
 
 
-void RealMatrix::PrintMatrix()
+void ComplexMatrix::PrintMatrix()
 {
     if(total_element_num_!=0)
     {
@@ -125,7 +125,7 @@ void RealMatrix::PrintMatrix()
     }
 }
 
-void RealMatrix::WriteMatrix(const char* matrix_name)
+void ComplexMatrix::WriteMatrix(const char* matrix_name)
 {
     ofstream matrix_file;
 
@@ -136,7 +136,7 @@ void RealMatrix::WriteMatrix(const char* matrix_name)
     matrix_file.close();
 }
 
-void RealMatrix::WriteMatrix(ofstream &matrix_file)
+void ComplexMatrix::WriteMatrix(ofstream &matrix_file)
 {
     matrix_file.write((char*) &row_, sizeof(int));
     matrix_file.write((char*) &column_, sizeof(int));
@@ -145,11 +145,11 @@ void RealMatrix::WriteMatrix(ofstream &matrix_file)
     if(matrix_element_ != nullptr)
     {
         for(int i=0;i<total_element_num_;++i) 
-            matrix_file.write((char*) &matrix_element_[i], sizeof(double));
+            matrix_file.write((char*) &matrix_element_[i], sizeof(Complex));
     }
 }
 
-void RealMatrix::ReadMatrix(const char* matrix_name)
+void ComplexMatrix::ReadMatrix(const char* matrix_name)
 {
     ifstream matrix_file;
 
@@ -160,7 +160,7 @@ void RealMatrix::ReadMatrix(const char* matrix_name)
     matrix_file.close();
 }
 
-void RealMatrix::ReadMatrix(ifstream &matrix_file)
+void ComplexMatrix::ReadMatrix(ifstream &matrix_file)
 {
     matrix_file.read((char*) &row_, sizeof(int));
     matrix_file.read((char*) &column_, sizeof(int));
@@ -169,16 +169,16 @@ void RealMatrix::ReadMatrix(ifstream &matrix_file)
     delete[] matrix_element_;
     if(total_element_num_ > 0)
     {
-        matrix_element_ = new double[total_element_num_];
+        matrix_element_ = new Complex[total_element_num_];
         for(int i=0;i<total_element_num_;++i)
-            matrix_file.read((char*) &matrix_element_[i], sizeof(double));
+            matrix_file.read((char*) &matrix_element_[i], sizeof(Complex));
     }
 }
 
 
 // set row and column to zero
 //
-void RealMatrix::ResetMatrix()
+void ComplexMatrix::ResetMatrix()
 {
     row_ = 0;
     column_ = 0;
@@ -189,7 +189,7 @@ void RealMatrix::ResetMatrix()
 
 // set matrix elements to zero
 //
-void RealMatrix::ClearMatrix()
+void ComplexMatrix::ClearMatrix()
 {
     for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 0.0;
 }
@@ -197,31 +197,31 @@ void RealMatrix::ClearMatrix()
 
 // set matrix elements random
 //
-void RealMatrix::RandomMatrix()
+void ComplexMatrix::RandomMatrix()
 {
     for(int j=0;j<column_;++j)
         for(int i=0;i<row_;++i)
-            set_matrix_element(i,j,0.01*(rand()%100));
+            set_matrix_element(i,j,Complex(0.01*(rand()%100), 0.01*(rand()%100)));
     //for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 0.01*(rand()%100);
 
 }
 
-double RealMatrix::SumSquareMatrix()
+double ComplexMatrix::SumSquareMatrix()
 {
     double result = 0.0;
     for(int i=0;i<total_element_num_;++i)
     {
-        result += matrix_element_[i]*matrix_element_[i];
+        result += SquareNorm(matrix_element_[i]);
     }
     return result;
 }
 
-void RealMatrix::AddToMatrixElement(int row, int column, double element)
+void ComplexMatrix::AddToMatrixElement(int row, int column, Complex element)
 {
     matrix_element_[row*column_+column] += element;
 }
 
-void RealMatrix::AddToMatrix(RealMatrix* tmp_matrix)
+void ComplexMatrix::AddToMatrix(ComplexMatrix* tmp_matrix)
 {
     if(tmp_matrix == nullptr || tmp_matrix->total_element_num_ == 0) 
     {
@@ -235,7 +235,7 @@ void RealMatrix::AddToMatrix(RealMatrix* tmp_matrix)
         total_element_num_ = tmp_matrix->total_element_num_;
         
         delete[] matrix_element_;
-        matrix_element_ = new double[total_element_num_];
+        matrix_element_ = new Complex[total_element_num_];
         for(int i=0;i<total_element_num_;++i) matrix_element_[i] = tmp_matrix->matrix_element_[i];
     }
     else
@@ -251,7 +251,7 @@ void RealMatrix::AddToMatrix(RealMatrix* tmp_matrix)
 }
 
 
-void RealMatrix::AddToMatrix(double factor, RealMatrix* tmp_matrix)
+void ComplexMatrix::AddToMatrix(Complex factor, ComplexMatrix* tmp_matrix)
 {
     if(tmp_matrix == nullptr || tmp_matrix->total_element_num_ == 0) 
     {
@@ -265,7 +265,7 @@ void RealMatrix::AddToMatrix(double factor, RealMatrix* tmp_matrix)
         total_element_num_ = tmp_matrix->total_element_num_;
         
         delete[] matrix_element_;
-        matrix_element_ = new double[total_element_num_];
+        matrix_element_ = new Complex[total_element_num_];
         for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 
                                               factor*tmp_matrix->matrix_element_[i];
     }
@@ -282,12 +282,12 @@ void RealMatrix::AddToMatrix(double factor, RealMatrix* tmp_matrix)
     }
 }
 
-void RealMatrix::MultiplyToScalar(double scalar)
+void ComplexMatrix::MultiplyToScalar(Complex scalar)
 {
     for(int i=0;i<total_element_num_;++i) matrix_element_[i] *= scalar;
 }
 
-RealMatrix* RealMatrix::MultiplyToMatrix(RealMatrix* tmp_matrix)
+ComplexMatrix* ComplexMatrix::MultiplyToMatrix(ComplexMatrix* tmp_matrix)
 {
     if(column_ != tmp_matrix->row_)
     {
@@ -299,7 +299,7 @@ RealMatrix* RealMatrix::MultiplyToMatrix(RealMatrix* tmp_matrix)
     CBLAS_TRANSPOSE transb = CblasNoTrans;
     MKL_INT m,n,k,lda,ldb,ldc;
     double alpha=1.0,beta=0.0;
-    RealMatrix* result_matrix = new RealMatrix(row_, tmp_matrix->column_);
+    ComplexMatrix* result_matrix = new ComplexMatrix(row_, tmp_matrix->column_);
     m = row_;
     k = column_;
     n = tmp_matrix->column_;
@@ -307,22 +307,22 @@ RealMatrix* RealMatrix::MultiplyToMatrix(RealMatrix* tmp_matrix)
     ldb = n;
     ldc = n;
 
-    cblas_dgemm(layout, transa, transb, m, n, k, alpha, matrix_element_, lda, 
-                tmp_matrix->matrix_element_, ldb, beta, result_matrix->matrix_element_, ldc);
+    cblas_zgemm(layout, transa, transb, m, n, k, &alpha, matrix_element_, lda, 
+                tmp_matrix->matrix_element_, ldb, &beta, result_matrix->matrix_element_, ldc);
     
     return result_matrix;
 }
 
-RealMatrix* RealMatrix::MatrixKronProduct(RealMatrix* tmp_matrix)
+ComplexMatrix* ComplexMatrix::MatrixKronProduct(ComplexMatrix* tmp_matrix)
 {
-    RealMatrix* result_matrix;
+    ComplexMatrix* result_matrix;
     int row, column, position[2];
-    double element[2];
+    Complex element[2];
     
     row = row_*tmp_matrix->get_row();
     column = column_*tmp_matrix->get_column();
     if(row==0 || column==0) return nullptr;
-    result_matrix = new RealMatrix(row, column);
+    result_matrix = new ComplexMatrix(row, column);
     
     for(int i1=0;i1<row_;++i1) for(int j1=0;j1<column_;++j1)
     {
@@ -339,7 +339,7 @@ RealMatrix* RealMatrix::MatrixKronProduct(RealMatrix* tmp_matrix)
     return result_matrix;
 }
 
-void RealMatrix::MatrixElementProduct(RealMatrix* tmp_matrix)
+void ComplexMatrix::MatrixElementProduct(ComplexMatrix* tmp_matrix)
 {
     if(row_ != tmp_matrix->row_ || column_ != tmp_matrix->column_)
     {
@@ -349,14 +349,14 @@ void RealMatrix::MatrixElementProduct(RealMatrix* tmp_matrix)
     for(int i=0;i<total_element_num_;++i) matrix_element_[i] *= tmp_matrix->matrix_element_[i];
 }
 
-void RealMatrix::ChangeMatrix(int leigh, int truncate_dim)
+void ComplexMatrix::ChangeMatrix(int leigh, int truncate_dim)
 {
     int tmp_total_element_num;
-    double *tmp_matrix_element;
+    Complex *tmp_matrix_element;
     if(leigh==0 && row_!=truncate_dim)
     {
         tmp_total_element_num = column_*truncate_dim;
-        tmp_matrix_element = new double[tmp_total_element_num];
+        tmp_matrix_element = new Complex[tmp_total_element_num];
         for(int i=0;i<tmp_total_element_num;++i) 
             tmp_matrix_element[i] = 0.0;
         if(total_element_num_ <= tmp_total_element_num)
@@ -373,7 +373,7 @@ void RealMatrix::ChangeMatrix(int leigh, int truncate_dim)
     else if(leigh==1 && column_!=truncate_dim)
     {
         tmp_total_element_num = row_*truncate_dim;
-        tmp_matrix_element = new double[tmp_total_element_num];
+        tmp_matrix_element = new Complex[tmp_total_element_num];
         for(int i=0;i<tmp_total_element_num;++i) 
             tmp_matrix_element[i] = 0.0;
         if(total_element_num_ <= tmp_total_element_num)
@@ -390,9 +390,9 @@ void RealMatrix::ChangeMatrix(int leigh, int truncate_dim)
 }
 
 
-RealMatrix* RealMatrix::TransposeMatrix()
+ComplexMatrix* ComplexMatrix::TransposeMatrix()
 {
-    RealMatrix* tmp_matrix = new RealMatrix(column_, row_);
+    ComplexMatrix* tmp_matrix = new ComplexMatrix(column_, row_);
     if(total_element_num_>0)
     {
         for(int i=0;i<row_;++i) for(int j=0;j<column_;++j)
@@ -402,9 +402,9 @@ RealMatrix* RealMatrix::TransposeMatrix()
 }
 
 
-RealMatrix* RealMatrix::ReshapeMatrix(int row, int column)
+ComplexMatrix* ComplexMatrix::ReshapeMatrix(int row, int column)
 {
-    RealMatrix* tmp_matrix;
+    ComplexMatrix* tmp_matrix;
     if(row*column != row_*column_)
     {
         cout << "Reshape dimension is not match in ReshapeMatrix" << endl;
@@ -412,14 +412,14 @@ RealMatrix* RealMatrix::ReshapeMatrix(int row, int column)
     }
     if(total_element_num_>0)
     {
-        tmp_matrix = new RealMatrix(row, column);
+        tmp_matrix = new ComplexMatrix(row, column);
         for(int i=0;i<total_element_num_;++i)
             tmp_matrix->matrix_element_[i] = matrix_element_[i];
     }
     return tmp_matrix;
 }
 
-void RealMatrix::ReplaceMatrix(RealMatrix* tmp_matrix)
+void ComplexMatrix::ReplaceMatrix(ComplexMatrix* tmp_matrix)
 {
     delete[] matrix_element_;
     row_ = tmp_matrix->row_;
@@ -428,17 +428,17 @@ void RealMatrix::ReplaceMatrix(RealMatrix* tmp_matrix)
     
     if(total_element_num_ > 0)
     {
-        matrix_element_ = new double[total_element_num_];
+        matrix_element_ = new Complex[total_element_num_];
         for(int i=0;i<total_element_num_;++i) matrix_element_[i] = tmp_matrix->matrix_element_[i];
     }
     else matrix_element_ = nullptr;
 }
 
-void RealMatrix::ParallelMatrix(int leigh, int &num_unparallel, int* &position_unparallel, 
-        RealMatrix* &transfer_tensor)
+void ComplexMatrix::ParallelMatrix(int leigh, int &num_unparallel, int* &position_unparallel, 
+        ComplexMatrix* &transfer_tensor)
 {
     bool zero;
-    double element[2], prefactor;
+    Complex element[2], prefactor;
     int info;
     
     if(leigh == 0)
@@ -448,7 +448,7 @@ void RealMatrix::ParallelMatrix(int leigh, int &num_unparallel, int* &position_u
             position_unparallel[i] = -1;
         position_unparallel[0] = 0;
 
-        transfer_tensor = new RealMatrix(column_, column_);
+        transfer_tensor = new ComplexMatrix(column_, column_);
         transfer_tensor->set_matrix_element(0, 0, 1.0);
         num_unparallel = 1;
 
@@ -491,7 +491,7 @@ void RealMatrix::ParallelMatrix(int leigh, int &num_unparallel, int* &position_u
             position_unparallel[i] = -1;
         position_unparallel[0] = 0;
 
-        transfer_tensor = new RealMatrix(row_, row_);
+        transfer_tensor = new ComplexMatrix(row_, row_);
         transfer_tensor->set_matrix_element(0, 0, 1.0);
         num_unparallel = 1;
 
@@ -529,16 +529,16 @@ void RealMatrix::ParallelMatrix(int leigh, int &num_unparallel, int* &position_u
     }
 }
 
-void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
+void ComplexMatrix::ExpanMatrix(int flag, ComplexMatrix* tmp_matrix)
 {
-    double* res_matrix_element;
+    Complex* res_matrix_element;
     int res_row, res_column, res_total_element_num;
     if(flag==0 && column_==tmp_matrix->column_)
     {
         res_row = row_ + tmp_matrix->row_;
         res_column = column_;
         res_total_element_num = res_row*res_column;
-        res_matrix_element = new double[res_total_element_num];
+        res_matrix_element = new Complex[res_total_element_num];
         for(int i=0;i<res_total_element_num;++i)
             res_matrix_element[i] = 0.0;
         for(int i=0;i<total_element_num_;++i)
@@ -554,7 +554,7 @@ void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
         res_row = row_;
         res_column = column_+tmp_matrix->column_;
         res_total_element_num = res_row*res_column;
-        res_matrix_element = new double[res_total_element_num];
+        res_matrix_element = new Complex[res_total_element_num];
         for(int i=0;i<res_total_element_num;++i)
             res_matrix_element[i] = 0.0;
         for(int i=0;i<row_;++i) for(int j=0;j<column_;++j)
@@ -584,7 +584,7 @@ void RealMatrix::ExpanMatrix(int flag, RealMatrix* tmp_matrix)
 
 // svd 
 // don't forget to delete left_matrix, right_matrix, sigular_value
-void RealMatrix::SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix, 
+void ComplexMatrix::SVDMatrix(ComplexMatrix* &left_matrix, ComplexMatrix* &right_matrix, 
                            double* &singular_value, int &singular_dim)
 {
     int matrix_layout = LAPACK_ROW_MAJOR;
@@ -602,13 +602,13 @@ void RealMatrix::SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix,
 
     singular_dim = min(row_, column_);
 
-    left_matrix = new RealMatrix(m, ldu);
-    right_matrix = new RealMatrix(ldvt, n);
-    //left_matrix = new RealMatrix(m, m);
-    //right_matrix = new RealMatrix(n, n);
+    left_matrix = new ComplexMatrix(m, ldu);
+    right_matrix = new ComplexMatrix(ldvt, n);
+    //left_matrix = new ComplexMatrix(m, m);
+    //right_matrix = new ComplexMatrix(n, n);
     singular_value = new double[singular_dim];
 
-    info = LAPACKE_dgesvd(matrix_layout, jobu, jobvt, m, n, matrix_element_, 
+    info = LAPACKE_zgesvd(matrix_layout, jobu, jobvt, m, n, matrix_element_, 
                           lda, singular_value, left_matrix->matrix_element_, 
                           ldu, right_matrix->matrix_element_, ldvt, superb);
     if(info>0)

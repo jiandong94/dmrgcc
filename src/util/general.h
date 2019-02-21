@@ -9,6 +9,8 @@
 #include <time.h>
 #include <math.h>
 
+#define MKL_Complex16 Complex
+#include "tensor/complex.h"
 #include "mkl.h"
 #include "sys/time.h"
 
@@ -62,6 +64,8 @@ void ReorderRelevantArray(int num_quantum, int num_table, int** quantum_table,
 //
 
 void RealSymMatrixDiag(double* eigenvector, double* eigenvalue, int vector_dim);
+
+void ComplexSymMatrixDiag(Complex* eigenvector, double* eigenvalue, int vector_dim);
 
 
 inline double get_wall_time()
@@ -127,6 +131,38 @@ inline void isParallelElement(double* element, int position, int& info, double& 
         else if(zero == false)
         {
             if(fabs(factor-prefactor) > 1E-8)
+            {
+                info = -1;
+                prefactor = 1.0;
+            }
+        }
+    }
+}
+
+inline void isParallelElement(Complex* element, int position, int& info, Complex& prefactor,
+                              bool& zero)
+{
+    Complex factor;
+    if(Norm(element[1]) <= 1E-10)
+    {
+        if(Norm(element[0]) > 1E-10)
+        {
+            info = -1;
+            prefactor = 1.0;
+        }
+    }
+    else
+    {
+        factor = element[0]/element[1];
+        if(zero == true)
+        {
+            info = position;
+            prefactor = factor;
+            zero = false;
+        }
+        else if(zero == false)
+        {
+            if(Norm(factor-prefactor) > 1E-8)
             {
                 info = -1;
                 prefactor = 1.0;

@@ -1,4 +1,4 @@
-#include "dmrg/real_tensor_lattice.h"
+#include "dmrg/realdmrg/real_tensor_lattice.h"
 
 int main()
 {

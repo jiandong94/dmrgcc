@@ -1,4 +1,4 @@
-#include "dmrg/space/bose_hubbard_space.h"
+#include "dmrg/realdmrg/space/bose_hubbard_space.h"
 
 int main()
 {

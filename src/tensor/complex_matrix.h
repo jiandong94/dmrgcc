@@ -1,14 +1,14 @@
-#ifndef DMRGCC_TENSOR_REAL_MATRIX_H_
-#define DMRGCC_TENSOR_REAL_MATRIX_H_
+#ifndef DMRGCC_TENSOR_COMPLEX_MATRIX_H_
+#define DMRGCC_TENSOR_COMPLEX_MATRIX_H_
 
-//#include "util/general.h"
+#include "tensor/complex.h"
 #include "util/general.ih"
 
-//  A class of RealMatrix.
-//  This class includes usual methods to operare real matrix.
+//  A class of ComplexMatrix.
+//  This class includes usual methods to operate complex matrix.
 //  The elements are stored in an array and row-major.
 //  
-class RealMatrix
+class ComplexMatrix
 {
     
     protected:
@@ -17,25 +17,25 @@ class RealMatrix
     int column_;
     int total_element_num_;
 
-    double* matrix_element_;
+    Complex* matrix_element_;
 
     public:
 
     // constructor
     //
-    RealMatrix();
+    ComplexMatrix();
 
     // constructor
     //
-    RealMatrix(int row, int column);
+    ComplexMatrix(int row, int column);
     
     // copy constructor
     //
-    RealMatrix(RealMatrix* tmp_matrix);
+    ComplexMatrix(ComplexMatrix* tmp_matrix);
 
     // destructor
     //
-    ~RealMatrix();
+    ~ComplexMatrix();
 
     // get row number
     //
@@ -51,15 +51,15 @@ class RealMatrix
 
     // set matrix element
     //
-    void set_matrix_element(int row, int column, double element);
+    void set_matrix_element(int row, int column, Complex element);
 
     // get a matrix element
     // 
-    double get_matrix_element(int row, int column);
+    Complex get_matrix_element(int row, int column);
     
     // get all the matrix elements
     // 
-    double* get_matrix_element();
+    Complex* get_matrix_element();
 
 
     // print it
@@ -102,31 +102,31 @@ class RealMatrix
     
     // add a value to a matrix element
     //
-    void AddToMatrixElement(int row, int column, double element);
+    void AddToMatrixElement(int row, int column, Complex element);
 
     // add the matrix to matrix
     //
-    void AddToMatrix(RealMatrix* tmp_matrix);
+    void AddToMatrix(ComplexMatrix* tmp_matrix);
    
     // matrix + factor*tmp_matrix
     //
-    void AddToMatrix(double factor, RealMatrix* tmp_matrix);
+    void AddToMatrix(Complex factor, ComplexMatrix* tmp_matrix);
 
     // matrix * scalar
     //
-    void MultiplyToScalar(double scalar);
+    void MultiplyToScalar(Complex scalar);
 
     // matrix * tmp_matrix
     //
-    RealMatrix* MultiplyToMatrix(RealMatrix* tmp_matrix);
+    ComplexMatrix* MultiplyToMatrix(ComplexMatrix* tmp_matrix);
 
     // matrix (kronecker product) tmp_matrix
     //
-    RealMatrix* MatrixKronProduct(RealMatrix* tmp_matrix);
+    ComplexMatrix* MatrixKronProduct(ComplexMatrix* tmp_matrix);
 
     // matrix_element * matrix_element
     //
-    void MatrixElementProduct(RealMatrix* tmp_matrix);
+    void MatrixElementProduct(ComplexMatrix* tmp_matrix);
 
     // change matrix
     // if leigh = 0, change matrix dimension to (dimen, RightDimen)
@@ -136,15 +136,15 @@ class RealMatrix
 
     // matrix'
     //
-    RealMatrix* TransposeMatrix();
+    ComplexMatrix* TransposeMatrix();
 
     // reshape matrix to (row, column)
     //
-    RealMatrix* ReshapeMatrix(int row, int column);
+    ComplexMatrix* ReshapeMatrix(int row, int column);
 
     // replace matrix(copy matrix)
     //
-    void ReplaceMatrix(RealMatrix* tmp_matrix);
+    void ReplaceMatrix(ComplexMatrix* tmp_matrix);
     
     // deparallelisation algorithm
     // M = M'*T (T is transfer matrix)
@@ -154,16 +154,16 @@ class RealMatrix
     //          =        * 
     //  2 4 2]      2 4]    0 0 0]
     void ParallelMatrix(int leigh, int &num_unparallel, int* &position_unparallel, 
-            RealMatrix* &transfer_tensor);
+            ComplexMatrix* &transfer_tensor);
 
     // expan matrix
     // if flag = 0, expan the matrix to (row_+row, column_). 
     // i.e. piece the up-matrix and the down-matrix
     //
-    void ExpanMatrix(int flag, RealMatrix* tmp_matrix);
+    void ExpanMatrix(int flag, ComplexMatrix* tmp_matrix);
 
     // svd
-    void SVDMatrix(RealMatrix* &left_matrix, RealMatrix* &right_matrix, 
+    void SVDMatrix(ComplexMatrix* &left_matrix, ComplexMatrix* &right_matrix, 
                    double* &singular_value, int &singular_dim);
 
 };

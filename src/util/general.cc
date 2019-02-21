@@ -46,3 +46,22 @@ void RealSymMatrixDiag(double* eigenvector, double* eigenvalue, int vector_dim)
         cout << "info = " << info << " in RealSymMatrixDiag" << endl;
     }
 }
+
+void ComplexSymMatrixDiag(Complex* eigenvector, double* eigenvalue, int vector_dim)
+{
+    int matrix_layout = LAPACK_ROW_MAJOR;
+    char jobz, uplo;
+    lapack_int n, lda, info;
+
+    jobz = 'V';
+    uplo = 'L';
+    n = vector_dim;
+    lda = n;
+
+    info = LAPACKE_zheevd (matrix_layout, jobz, uplo, n, eigenvector,
+            lda, eigenvalue);
+    if(info != 0)
+    {
+        cout << "info = " << info << " in RealSymMatrixDiag" << endl;
+    }
+}

@@ -1,7 +1,12 @@
 #ifndef TENSOR_COMPLEX_H
 #define TENSOR_COMPLEX_H
 
-#include "util/general.h"
+#include <iostream>
+#include <math.h>
+
+using std::cout;
+using std::endl;
+using std::ostream;
 
 class Complex
 {
@@ -14,17 +19,20 @@ class Complex
 
     Complex(double real, double imag);
 
+    // double -> Complex
+    Complex(double real);
+
     Complex(const Complex& z);
 
     ~Complex() {};
 
-    double Real();
+    friend double Real(const Complex& z);
 
-    double Imag();
+    friend double Imag(const Complex& z);
 
-    double Norm();
+    friend double Norm(const Complex& z);
 
-    double SquareNorm();
+    friend double SquareNorm(const Complex& z);
 
     friend Complex Conj(const Complex& z);
 
@@ -49,7 +57,16 @@ class Complex
     friend Complex operator - (double r, const Complex &z);
     friend Complex operator * (double r, const Complex &z);
     friend Complex operator / (double r, const Complex &z);
+    friend Complex operator + (const Complex &z);
+    friend Complex operator - (const Complex &z);
 
+    friend bool operator < (const Complex& z1, const Complex& z2);
+    friend bool operator <= (const Complex& z1, const Complex& z2);
+    friend bool operator > (const Complex& z1, const Complex& z2);
+    friend bool operator >= (const Complex& z1, const Complex& z2);
+    friend bool operator == (const Complex& z1, const Complex& z2);
+    friend bool operator != (const Complex& z1, const Complex& z2);
+    
     Complex& operator = (const Complex& z);
     Complex& operator = (double r);
 
@@ -68,35 +85,41 @@ inline Complex::Complex(double real, double imag)
     imag_ = imag;
 }
 
+inline Complex::Complex(double real)
+{
+    real_ = real;
+    imag_ = 0.0;
+}
+
 inline Complex::Complex(const Complex& z)
 {
     real_ = z.real_;
     imag_ = z.imag_;
 }
 
-inline double Complex::Real()
+inline double Real(const Complex& z)
 {
-    return real_;
+    return z.real_;
 }
 
-inline double Complex::Imag()
+inline double Imag(const Complex& z)
 {
-    return imag_;
+    return z.imag_;
 }
 
-inline double Complex::Norm()
+inline double Norm(const Complex& z)
 {
-    return sqrt(real_*real_ + imag_*imag_);
+    return sqrt(z.real_*z.real_ + z.imag_*z.imag_);
 }
 
-inline double Complex::SquareNorm()
+inline double SquareNorm(const Complex& z)
 {
-    return real_*real_ + imag_*imag_;
+    return z.real_*z.real_ + z.imag_*z.imag_;
 }
 
-inline Complex(const Complex& z)
+inline Complex Conj(const Complex& z)
 {
-    return Complex(z.real_, -z.imag);
+    return Complex(z.real_, -z.imag_);
 }
 
 //----------------------operator-------------------------
@@ -220,6 +243,46 @@ inline Complex operator/ (double r, const Complex& z)
 {
     double k = 1.0/(z.real_*z.real_ + z.imag_*z.imag_);
     return Complex((r*z.real_)*k, (-r*z.imag_)*k);
+}
+
+inline Complex operator+ (const Complex& z)
+{
+    return Complex(z.real_, z.imag_);
+}
+
+inline Complex operator- (const Complex& z)
+{
+    return Complex(-z.real_, -z.imag_);
+}
+
+inline bool operator < (const Complex& z1, const Complex& z2)
+{
+    return ((z1.real_ < z2.real_) || ((z1.real_ == z2.real_) && (z1.imag_ < z2.imag_)));
+}
+
+inline bool operator <= (const Complex& z1, const Complex& z2)
+{
+    return ((z1.real_ < z2.real_) || ((z1.real_ == z2.real_) && (z1.imag_ <= z2.imag_)));
+}
+
+inline bool operator > (const Complex& z1, const Complex& z2)
+{
+    return ((z1.real_ > z2.real_) || ((z1.real_ == z2.real_) && (z1.imag_ > z2.imag_)));
+}
+
+inline bool operator >= (const Complex& z1, const Complex& z2)
+{
+    return ((z1.real_ > z2.real_) || ((z1.real_ == z2.real_) && (z1.imag_ >= z2.imag_)));
+}
+
+inline bool operator == (const Complex& z1, const Complex& z2)
+{
+    return ((z1.real_ == z2.real_) && (z1.imag_ == z2.imag_));
+}
+
+inline bool operator != (const Complex& z1, const Complex& z2)
+{
+    return ((z1.real_ != z2.real_) || (z1.imag_ != z2.imag_));
 }
 
 inline Complex& Complex::operator= (const Complex& z)
