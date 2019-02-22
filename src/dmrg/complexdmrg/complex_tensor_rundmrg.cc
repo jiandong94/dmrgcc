@@ -1,6 +1,6 @@
-#include "dmrg/realdmrg/real_tensor_rundmrg.h"
+#include "dmrg/complexdmrg/complex_tensor_rundmrg.h"
 
-RealTensorRundmrg::RealTensorRundmrg(RealTensorSpace* space, RealTensorHamiltonian* hamiltonian, 
+ComplexTensorRundmrg::ComplexTensorRundmrg(ComplexTensorSpace* space, ComplexTensorHamiltonian* hamiltonian, 
     InputGroup& input)
 {
     space_ = space;
@@ -53,10 +53,10 @@ RealTensorRundmrg::RealTensorRundmrg(RealTensorSpace* space, RealTensorHamiltoni
     // hamiltonian
     hamiltonian_->DefineTensorHamiltonian();
     // network
-    network_ = new RealTensorNetwork(space_, hamiltonian_);
+    network_ = new ComplexTensorNetwork(space_, hamiltonian_);
 }
 
-RealTensorRundmrg::~RealTensorRundmrg()
+ComplexTensorRundmrg::~ComplexTensorRundmrg()
 {
     delete network_;
 
@@ -67,7 +67,7 @@ RealTensorRundmrg::~RealTensorRundmrg()
     delete[] noise_factor_;
 }
 
-void RealTensorRundmrg::Sweep(InputGroup &table)
+void ComplexTensorRundmrg::Sweep(InputGroup &table)
 {
     if(!(table.GotoGroup()))
         error("Couldn't find table " + table.name());
@@ -112,9 +112,9 @@ void RealTensorRundmrg::Sweep(InputGroup &table)
         noise_factor_[i] = pow(0.1, noise_factor_[i]);
 }
 
-void RealTensorRundmrg::Run()
+void ComplexTensorRundmrg::Run()
 {
-    RealTensorLanczos* lanczos;
+    ComplexTensorLanczos* lanczos;
     ofstream process_file;
     double start_time, end_time;
     double energy;
@@ -131,7 +131,7 @@ void RealTensorRundmrg::Run()
     // compute right contraction
     Initialize();
     
-    lanczos = new RealTensorLanczos(space_, hamiltonian_, network_);
+    lanczos = new ComplexTensorLanczos(space_, hamiltonian_, network_);
     // begin sweep
     int left = 0;
     int right = 1;
@@ -248,7 +248,7 @@ void RealTensorRundmrg::Run()
 
 }
 
-void RealTensorRundmrg::Initialize()
+void ComplexTensorRundmrg::Initialize()
 {
     int left, right;
     left = 0;

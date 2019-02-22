@@ -228,7 +228,7 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
                 {
                     p1 = expan_tensor_lattice->physics_index_[idx][ldx];
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0) exist_flag[ldx] = true;
+                    if(element.real_!=0.0 || element.imag_!=0.0) exist_flag[ldx] = true;
                 }
             }
         }
@@ -392,7 +392,7 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
                 {
                     p1 = expan_tensor_lattice->physics_index_[idx][ldx];
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0)
+                    if(element.real_!=0.0 || element.imag_!=0.0)
                     {
                         tmp_tensor[2]->RandomMatrix();
                         for(int t=0;t<min(expan_dim[0], expan_dim[1]);++t)
@@ -536,7 +536,7 @@ void ComplexTensorContraction::RightExpanTensorContraction(ComplexTensorLattice*
                 {
                     p1 = expan_tensor_lattice->physics_index_[ldx][idx];
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0) exist_flag[ldx] = true;
+                    if(element.real_!=0.0 || element.imag_!=0.0) exist_flag[ldx] = true;
                 }
             }
         }
@@ -698,7 +698,7 @@ void ComplexTensorContraction::RightExpanTensorContraction(ComplexTensorLattice*
                 {
                     p1 = expan_tensor_lattice->physics_index_[ldx][idx];
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0)
+                    if(element.real_!=0.0 || element.imag_!=0.0)
                     {
                         tmp_tensor[2]->RandomMatrix();
                         for(int t=0;t<min(expan_dim[0], expan_dim[1]);++t)
@@ -834,7 +834,7 @@ void ComplexTensorContraction::LeftComputeTensorContraction(ComplexTensorLattice
                 for(int o2=0;o2<right_bond;++o2)
                 {
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0) zero_flag[o2][idx][jdx] = true;
+                    if(element.real_!=0.0 || element.imag_!=0.0) zero_flag[o2][idx][jdx] = true;
                 }
             }
         }
@@ -905,7 +905,7 @@ void ComplexTensorContraction::LeftComputeTensorContraction(ComplexTensorLattice
             if(tensor_operator->LeftCheckZero(o1, p1) == false) continue; //zero
             // L*B (b_0, a_0)'*(b_0, b1) = (a_0, b_1)
             tmp_tensor[1] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[kdx][k]];
-            bra_tensor = tmp_tensor[1]->TransposeMatrix();
+            bra_tensor = tmp_tensor[1]->HermitianConjugateMatrix();
             first_tensor = bra_tensor->MultiplyToMatrix(tmp_tensor[0]);
             delete bra_tensor;
             for(int l=0;l<num_same_index[ldx];++l)
@@ -918,7 +918,7 @@ void ComplexTensorContraction::LeftComputeTensorContraction(ComplexTensorLattice
                 for(int o2=0;o2<right_bond;++o2)
                 {
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0) 
+                    if(element.real_!=0.0 || element.imag_!=0.0) 
                     {
                         // L*B*K*W
                         position = tensor_contraction->left_contraction_tensor_[o2]->FindMatrixBlock(idx, jdx);
@@ -1011,7 +1011,7 @@ void ComplexTensorContraction::RightComputeTensorContraction(ComplexTensorLattic
                 for(int o1=0;o1<left_bond;++o1)
                 {
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0) zero_flag[o1][jdx][idx] = true;
+                    if(element.real_!=0.0 || element.imag_!=0.0) zero_flag[o1][jdx][idx] = true;
                 }
             }
         }
@@ -1089,14 +1089,14 @@ void ComplexTensorContraction::RightComputeTensorContraction(ComplexTensorLattic
                 p1 = tensor_lattice->physics_index_[idx][kdx];
                 // K*R*B (a_1, b_0)*(a_0, b_0)' = (a_1, a_0)
                 tmp_tensor[2] = tensor_lattice->ket_tensor_->matrix_block_[position_same_index[kdx][k]];
-                bra_tensor = tmp_tensor[2]->TransposeMatrix();
+                bra_tensor = tmp_tensor[2]->HermitianConjugateMatrix();
                 second_tensor = first_tensor->MultiplyToMatrix(bra_tensor);
                 delete bra_tensor;
                 
                 for(int o1=0;o1<left_bond;++o1)
                 {
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0) 
+                    if(element.real_!=0.0 || element.imag_!=0.0) 
                     {
                         // K*R*B*W
                         position = tensor_contraction->right_contraction_tensor_[o1]->FindMatrixBlock(jdx, idx);
@@ -1175,7 +1175,7 @@ void ComplexTensorContraction::ComputeEffectHamilton(ComplexTensorLattice* tenso
                 p1 = tensor_lattice->physics_index_[idx][jdx];
                 p2 = tensor_lattice->physics_index_[kdx][ldx];
                 element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                if(element != 0)
+                if(element.real_!=0.0 || element.imag_!=0.0)
                 {
                     inv_tensor = tmp_tensor[1]->TransposeMatrix();
                     result_tensor = tmp_tensor[0]->MatrixKronProduct(inv_tensor);
@@ -1267,7 +1267,7 @@ void ComplexTensorContraction::MultiplyEffectHamilton(ComplexTensorLattice* tens
                 for(int o1=0;o1<left_bond;++o1)
                 {
                     element = tensor_operator->tensor_operator_[o1][o2]->get_matrix_element(p1, p2);
-                    if(element != 0.0) 
+                    if(element.real_!=0.0 || element.imag_!=0.0) 
                     {
                         position = left_contraction_tensor_[o1]->FindMatrixBlock(idx, kdx);
                         if(position != -1)

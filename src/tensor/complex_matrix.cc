@@ -393,7 +393,7 @@ void ComplexMatrix::ChangeMatrix(int leigh, int truncate_dim)
 ComplexMatrix* ComplexMatrix::TransposeMatrix()
 {
     ComplexMatrix* tmp_matrix = new ComplexMatrix(column_, row_);
-    if(total_element_num_>0)
+    if(total_element_num_ > 0)
     {
         for(int i=0;i<row_;++i) for(int j=0;j<column_;++j)
             tmp_matrix->set_matrix_element(j, i, get_matrix_element(i, j));
@@ -401,6 +401,16 @@ ComplexMatrix* ComplexMatrix::TransposeMatrix()
     return tmp_matrix;
 }
 
+ComplexMatrix* ComplexMatrix::HermitianConjugateMatrix()
+{
+    ComplexMatrix* tmp_matrix = new ComplexMatrix(column_, row_);
+    if(total_element_num_ > 0)
+    {
+        for(int i=0;i<row_;++i) for(int j=0;j<column_;++j)
+            tmp_matrix->set_matrix_element(j, i, Conj(get_matrix_element(i, j)));
+    }
+    return tmp_matrix;
+}
 
 ComplexMatrix* ComplexMatrix::ReshapeMatrix(int row, int column)
 {

@@ -1,17 +1,17 @@
-#ifndef DMRGCC_DMRG_REAL_TENSOR_RUNDMRG_H_
-#define DMRGCC_DMRG_REAL_TENSOR_RUNDMRG_H_
+#ifndef DMRGCC_DMRG_COMPLEX_TENSOR_RUNDMRG_H_
+#define DMRGCC_DMRG_COMPLEX_TENSOR_RUNDMRG_H_
 
-#include "dmrg/realdmrg/real_tensor_lanczos.h"
+#include "dmrg/complexdmrg/complex_tensor_lanczos.h"
 #include "util/input.h"
-class RealTensorRundmrg
+class ComplexTensorRundmrg
 {
     protected:
 
-    RealTensorSpace* space_;
+    ComplexTensorSpace* space_;
 
-    RealTensorHamiltonian* hamiltonian_;
+    ComplexTensorHamiltonian* hamiltonian_;
 
-    RealTensorNetwork* network_;
+    ComplexTensorNetwork* network_;
 
     bool disk_cache_;
     char cache_name_[512];
@@ -38,12 +38,12 @@ class RealTensorRundmrg
 
     //
     //
-    RealTensorRundmrg(RealTensorSpace* space, RealTensorHamiltonian* hamiltonian,
+    ComplexTensorRundmrg(ComplexTensorSpace* space, ComplexTensorHamiltonian* hamiltonian,
         InputGroup& input);
 
     //
     //
-    ~RealTensorRundmrg();
+    ~ComplexTensorRundmrg();
 
     //
     //
@@ -58,4 +58,4 @@ class RealTensorRundmrg
     void Initialize();
 };
 
-#endif // DMRGCC_DMRG_REAL_TENSOR_RUNDMRG_H_
+#endif // DMRGCC_DMRG_COMPLEX_TENSOR_RUNDMRG_H_

@@ -138,6 +138,10 @@ class ComplexMatrix
     //
     ComplexMatrix* TransposeMatrix();
 
+    //
+    //
+    ComplexMatrix* HermitianConjugateMatrix();
+
     // reshape matrix to (row, column)
     //
     ComplexMatrix* ReshapeMatrix(int row, int column);
