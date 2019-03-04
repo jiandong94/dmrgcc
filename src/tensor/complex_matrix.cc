@@ -180,6 +180,7 @@ void ComplexMatrix::ReadMatrix(ifstream &matrix_file)
 //
 void ComplexMatrix::ResetMatrix()
 {
+    delete[] matrix_element_;
     row_ = 0;
     column_ = 0;
     total_element_num_ = 0;
@@ -201,6 +202,7 @@ void ComplexMatrix::RandomMatrix()
 {
     for(int j=0;j<column_;++j)
         for(int i=0;i<row_;++i)
+            //set_matrix_element(i,j,Complex(0.01*(rand()%100), 0.0));
             set_matrix_element(i,j,Complex(0.01*(rand()%100), 0.01*(rand()%100)));
     //for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 0.01*(rand()%100);
 
@@ -234,7 +236,7 @@ void ComplexMatrix::AddToMatrix(ComplexMatrix* tmp_matrix)
         column_ = tmp_matrix->column_;
         total_element_num_ = tmp_matrix->total_element_num_;
         
-        delete[] matrix_element_;
+        //delete[] matrix_element_;
         matrix_element_ = new Complex[total_element_num_];
         for(int i=0;i<total_element_num_;++i) matrix_element_[i] = tmp_matrix->matrix_element_[i];
     }
@@ -264,7 +266,7 @@ void ComplexMatrix::AddToMatrix(Complex factor, ComplexMatrix* tmp_matrix)
         column_ = tmp_matrix->column_;
         total_element_num_ = tmp_matrix->total_element_num_;
         
-        delete[] matrix_element_;
+        //delete[] matrix_element_;
         matrix_element_ = new Complex[total_element_num_];
         for(int i=0;i<total_element_num_;++i) matrix_element_[i] = 
                                               factor*tmp_matrix->matrix_element_[i];
@@ -592,15 +594,16 @@ void ComplexMatrix::ExpanMatrix(int flag, ComplexMatrix* tmp_matrix)
 }
 
 
-// svd 
+// svd (bug: zgesvd is wrong when svd a big random complex matrix(e.g. (200,100)) in left_matrix) 
 // don't forget to delete left_matrix, right_matrix, sigular_value
 void ComplexMatrix::SVDMatrix(ComplexMatrix* &left_matrix, ComplexMatrix* &right_matrix, 
                            double* &singular_value, int &singular_dim)
 {
     int matrix_layout = LAPACK_ROW_MAJOR;
     int info;
-    char jobu = 'S';
-    char jobvt = 'S';
+    //char jobu = 'S';
+    //char jobvt = 'S';
+    char jobz = 'S';
     lapack_int m, n, lda, ldu, ldvt;
     m = row_;
     n = column_;
@@ -618,9 +621,12 @@ void ComplexMatrix::SVDMatrix(ComplexMatrix* &left_matrix, ComplexMatrix* &right
     //right_matrix = new ComplexMatrix(n, n);
     singular_value = new double[singular_dim];
 
-    info = LAPACKE_zgesvd(matrix_layout, jobu, jobvt, m, n, matrix_element_, 
+    //info = LAPACKE_zgesvd(matrix_layout, jobu, jobvt, m, n, matrix_element_, 
+    //                      lda, singular_value, left_matrix->matrix_element_, 
+    //                      ldu, right_matrix->matrix_element_, ldvt, superb);
+    info = LAPACKE_zgesdd(matrix_layout, jobz, m, n, matrix_element_, 
                           lda, singular_value, left_matrix->matrix_element_, 
-                          ldu, right_matrix->matrix_element_, ldvt, superb);
+                          ldu, right_matrix->matrix_element_, ldvt);
     if(info>0)
     {
         cout << "The algorithm computing SVD failed to converge." << endl;

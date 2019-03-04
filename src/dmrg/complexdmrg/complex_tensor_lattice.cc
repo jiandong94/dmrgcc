@@ -584,6 +584,7 @@ void ComplexTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canoni
 
         if(block_dim[0] == 0)
         {
+            cout << "block_dim is zero in LeftCanonicalTensorLattice" << endl;
             left_singular_tensor[r] = nullptr;
             right_singular_tensor[r] = new ComplexMatrix(block_dim[1], block_dim[1]);
             singular_dim[r] = 1;
@@ -618,7 +619,7 @@ void ComplexTensorLattice::LeftCanonicalTensorLattice(int max_dim, double canoni
     }
     ComputeTruncateDim(max_dim, canonical_precision, num_right_block_, singular_dim, 
                        singular_value, truncate_dim);
-
+    
     // left_canonical_tensor => ket_tensor_
     // singular_value*right_canonical_tensor_ => canonical_tensor_
     // match_dim_ : right_dim_ for canonical_tensor_
@@ -819,6 +820,7 @@ void ComplexTensorLattice::RightCanonicalTensorLattice(int max_dim, double canon
 
         if(block_dim[1] == 0)
         {
+            cout << "block_dim is zero in RightCanonicalTensorLattice" << endl;
             left_singular_tensor[l] = new ComplexMatrix(block_dim[0], block_dim[0]);
             right_singular_tensor[l] = nullptr;
             singular_dim[l] = 1;

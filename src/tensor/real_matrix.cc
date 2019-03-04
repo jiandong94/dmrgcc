@@ -180,6 +180,7 @@ void RealMatrix::ReadMatrix(ifstream &matrix_file)
 //
 void RealMatrix::ResetMatrix()
 {
+    delete[] matrix_element_;
     row_ = 0;
     column_ = 0;
     total_element_num_ = 0;

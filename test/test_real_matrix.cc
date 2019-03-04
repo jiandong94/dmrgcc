@@ -5,7 +5,20 @@ int main()
     cout << "=================================" << endl;
     cout << "         Test RealMatrix         " << endl;
     cout << "=================================" << endl;
-    
+   
+    cout << "test quick sort" << endl;
+    double array[6] = {0.2, 0.4, 2.6, 0.8, 1, 3.2};
+    int index[6] = {0,1,2,3,4,5};
+    QuickSort(array, index, 0, 5, 1);
+    for(int i=0;i<6;++i)
+    {
+        cout << array[i] << endl;
+    }
+    for(int i=0;i<6;++i)
+    {
+        cout << index[i] << endl;
+    }
+
     cout << "1. Constructor" << endl;
     // constructor
     RealMatrix* matrix = new RealMatrix();
@@ -114,12 +127,12 @@ int main()
         RealMatrix* matrix_test = new RealMatrix(3000,3000);
         matrix_test->RandomMatrix();
         double start_time = GetWallTime();
-        matrix_multiply = matrix_test->MultiplyToMatrix(matrix_test);
+        //matrix_multiply = matrix_test->MultiplyToMatrix(matrix_test);
         double end_time = GetWallTime();
         cout << "[Iteration "<< i+1  << " Time :" << (end_time-start_time) << endl;
         
         delete matrix_test;
-        delete matrix_multiply;
+        //delete matrix_multiply;
     }
     
     
@@ -166,11 +179,16 @@ int main()
     for(int i=0;i<sigular_dim;++i) 
         cout << sigular_value[i] << " ";
     cout << endl;
-
     
     delete left_matrix, right_matrix;
     delete[] sigular_value;
     delete matrix;
+    
+    cout << "SVD matrix" << endl;
+    RealMatrix* matrix_test = new RealMatrix(200,100);
+    matrix_test->RandomMatrix();
+    matrix_test->SVDMatrix(left_matrix, right_matrix, sigular_value, sigular_dim);
+    left_matrix->PrintMatrix();
 
     cout << endl;
     cout << "9. ParallelMatrix" << endl;

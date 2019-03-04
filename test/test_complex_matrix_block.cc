@@ -6,7 +6,7 @@ int main()
     cout << "    Test ComplexMatrixBlock      " << endl;
     cout << "=================================" << endl;
 
-    srand((unsigned)time(NULL));
+    //srand((unsigned)time(NULL));
 
 
     cout << "1. Constructor" << endl;

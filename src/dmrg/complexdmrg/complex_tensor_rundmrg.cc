@@ -31,7 +31,6 @@ ComplexTensorRundmrg::ComplexTensorRundmrg(ComplexTensorSpace* space, ComplexTen
     num_site_pp_ = num_site_+1;
     num_site_mm_ = num_site_-1;
 
-
     int first_block = input.getInt("first_block");
     int first_dim = input.getInt("first_dim");
     int num_sweep =  input.getInt("num_sweep");
@@ -50,8 +49,10 @@ ComplexTensorRundmrg::ComplexTensorRundmrg(ComplexTensorSpace* space, ComplexTen
         // left canonical
         space_->DefineTensorSpace(first_block, first_dim);
     }
+    //space->PrintTensorSpace();
     // hamiltonian
     hamiltonian_->DefineTensorHamiltonian();
+    //hamiltonian_->PrintTensorHamiltonian();
     // network
     network_ = new ComplexTensorNetwork(space_, hamiltonian_);
 }
@@ -121,7 +122,7 @@ void ComplexTensorRundmrg::Run()
     char label[512], tensor_name[512], record_name[512];
     int dummy;
     cout.setf(ios::fixed);
-    cout.precision(12);
+    cout.precision(14);
     
     start_time = get_wall_time();
     //process_file.open(process_name_, ios::binary|ios::app|ios::out);
@@ -130,7 +131,9 @@ void ComplexTensorRundmrg::Run()
     // right canonical tensor space
     // compute right contraction
     Initialize();
-    
+    //space_->PrintTensorSpace();
+    //network_->PrintTensorNetwork();
+    //exit(-1);
     lanczos = new ComplexTensorLanczos(space_, hamiltonian_, network_);
     // begin sweep
     int left = 0;
@@ -146,21 +149,20 @@ void ComplexTensorRundmrg::Run()
         for(int j=0;j<num_site_mm_;++j)
         {
             lanczos->LanczosMethod(num_iter_[2*i], j, energy);
-            
+            cout << "energy: " << energy << endl;
             network_->ResetTensorNetwork(right, j);
             network_->RemoveTensorNetwork(right, j);
-
+            
             // subspace expansion
-            //cout << "before psi_dim: " << space_->get_tensor_lattice(j)->ComputeKetTensorDim() << endl;            
             network_->ExpanTensorNetwork(left, j);
             space_->ExpanTensorSpace(left, j);
-            //cout << "after psi_dim: " << space_->get_tensor_lattice(j)->ComputeKetTensorDim() << endl;            
+            
             // left canonical
             space_->CanonicalTensorSpace(left, j);
             
             // compute L tensor 
             network_->ComputeTensorNetwork(left, j);
-
+            
             if(disk_cache_ == true)
             {
                 space_->RecordTensorSpace(j);
@@ -175,7 +177,6 @@ void ComplexTensorRundmrg::Run()
 
             space_->MatchTensorSpace(left, j+1);
             space_->MergeTensorSpace(left, j+1);
-            //space_->get_tensor_lattice(j+1)->PrintTensorLattice();
         }
          
         cout << "right energy = " << energy << endl;
@@ -187,6 +188,7 @@ void ComplexTensorRundmrg::Run()
         for(int j=num_site_mm_;j>0;--j)
         {
             lanczos->LanczosMethod(num_iter_[2*i+1], j, energy);
+            cout << "energy: " << energy << endl;
 
             network_->ResetTensorNetwork(left, j);
             network_->RemoveTensorNetwork(left, j);

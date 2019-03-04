@@ -107,7 +107,7 @@ int main()
     delete matrix_multiply;
     
     // test MKL 
-    
+    /* 
     cout << endl;
     cout << "6. Test MKL dgemm speed" << endl;
     cout << "Test MKL speed: random_matrix[3000,3000]*random[3000,3000]" << endl;
@@ -116,14 +116,42 @@ int main()
         ComplexMatrix* matrix_test = new ComplexMatrix(3000,3000);
         matrix_test->RandomMatrix();
         double start_time = GetWallTime();
-        matrix_multiply = matrix_test->MultiplyToMatrix(matrix_test);
+        //matrix_multiply = matrix_test->MultiplyToMatrix(matrix_test);
         double end_time = GetWallTime();
         cout << "[Iteration "<< i+1  << " Time :" << (end_time-start_time) << endl;
         
         delete matrix_test;
-        delete matrix_multiply;
+        //delete matrix_multiply;
     }
+    */
+    ComplexMatrix* matrix_test = new ComplexMatrix(300,300);
+    matrix_test->RandomMatrix();
+    matrix_multiply = matrix_test->MultiplyToMatrix(matrix_test);
+    matrix_multiply->PrintMatrix();
+    ComplexMatrix* matrix_multiply_new = new ComplexMatrix(300,300);
+    Complex tmp_value = 0.0;
+    for(int i=0;i<matrix_test->get_row();++i)
+        for(int k=0;k<matrix_test->get_column();++k)
+        {
+            tmp_value = 0.0;
+            for(int j=0;j<matrix_test->get_column();++j)
+            {
+                tmp_value += matrix_test->get_matrix_element(i,j) * matrix_test->get_matrix_element(j,k);
+            }
+            matrix_multiply_new->set_matrix_element(i, k, tmp_value);
+        }
     
+    cout << "=================================" << endl;
+    cout << "=================================" << endl;
+    cout << "=================================" << endl;
+    cout << "=================================" << endl;
+    cout << "=================================" << endl;
+    matrix_multiply_new->PrintMatrix();
+    //for(int i=0;i<matrix_multiply->get_row();++i)
+    //    for(int j=0;j<matrix_multiply->get_column();++j)
+    
+
+    delete matrix_test;
     
     cout << endl;
     cout << "7. ChangeMatrix TransposeMatrix ReshapeMatrix ExpanMatrix" << endl;
@@ -172,6 +200,44 @@ int main()
     delete[] sigular_value;
     delete matrix;
 
+    cout << "SVD matrix" << endl;
+    matrix_test = new ComplexMatrix(200,100);
+    matrix_test->RandomMatrix();
+    ComplexMatrix* matrix_test_old = new ComplexMatrix(matrix_test);
+    //matrix_test->PrintMatrix();
+    matrix_test->SVDMatrix(left_matrix, right_matrix, sigular_value, sigular_dim);
+    ComplexMatrix* S = new ComplexMatrix(left_matrix->get_column(), right_matrix->get_row());
+    for(int i=0;i<min(left_matrix->get_column(), right_matrix->get_row());++i)
+    {
+        S->set_matrix_element(i,i,sigular_value[i]);
+    }
+    ComplexMatrix* matrix_test_new;
+    matrix_test_new = left_matrix->MultiplyToMatrix(S)->MultiplyToMatrix(right_matrix);
+    //matrix_test_new->PrintMatrix();
+    //
+    for(int i=0;i<matrix_test->get_row();++i)
+        for(int j=0;j<matrix_test->get_column();++j)
+        {
+            if(Norm(matrix_test_old->get_matrix_element(i,j) - matrix_test_new->get_matrix_element(i,j)) > 1E-8)
+                error("error svd");
+                //cout << Norm(matrix_test->get_matrix_element(i,j) - matrix_test_new->get_matrix_element(i,j)) << endl;
+        }
+
+    delete left_matrix, right_matrix;
+    delete[] sigular_value;
+    delete matrix;
+    
+    /* 
+    cout << "diag matrix" << endl;
+    double *eigenvalue=new double[30];
+    int vector_dim=30;
+    matrix_test = new ComplexMatrix(30,30);
+    matrix_test->RandomMatrix();
+    ComplexSymMatrixDiag(matrix_test->get_matrix_element(), eigenvalue, vector_dim);
+    matrix_test->PrintMatrix();
+    */
+
+        
     cout << endl;
     cout << "9. ParallelMatrix" << endl;
     cout << "Left Parallel" << endl;

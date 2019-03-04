@@ -130,8 +130,8 @@ void RealTensorRundmrg::Run()
     // right canonical tensor space
     // compute right contraction
     Initialize();
-    
     lanczos = new RealTensorLanczos(space_, hamiltonian_, network_);
+    
     // begin sweep
     int left = 0;
     int right = 1;
@@ -146,15 +146,14 @@ void RealTensorRundmrg::Run()
         for(int j=0;j<num_site_mm_;++j)
         {
             lanczos->LanczosMethod(num_iter_[2*i], j, energy);
-            
+            cout << "energy: " << energy << endl;    
             network_->ResetTensorNetwork(right, j);
             network_->RemoveTensorNetwork(right, j);
 
             // subspace expansion
-            //cout << "before psi_dim: " << space_->get_tensor_lattice(j)->ComputeKetTensorDim() << endl;            
             network_->ExpanTensorNetwork(left, j);
             space_->ExpanTensorSpace(left, j);
-            //cout << "after psi_dim: " << space_->get_tensor_lattice(j)->ComputeKetTensorDim() << endl;            
+            
             // left canonical
             space_->CanonicalTensorSpace(left, j);
             
@@ -175,7 +174,6 @@ void RealTensorRundmrg::Run()
 
             space_->MatchTensorSpace(left, j+1);
             space_->MergeTensorSpace(left, j+1);
-            //space_->get_tensor_lattice(j+1)->PrintTensorLattice();
         }
          
         cout << "right energy = " << energy << endl;

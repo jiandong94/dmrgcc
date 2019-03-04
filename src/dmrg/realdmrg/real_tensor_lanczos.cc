@@ -41,6 +41,7 @@ void RealTensorLanczos::LanczosMethod(int num_iter, int site, double& result_val
         }
         
         tensor_contraction->ComputeEffectHamilton(tensor_lattice, tensor_operator, eigenvector);
+        
         RealSymMatrixDiag(eigenvector, eigenvalue, psi_dim);
         
         result_value = eigenvalue[0];
@@ -74,7 +75,7 @@ void RealTensorLanczos::LanczosMethod(int num_iter, int site, double& result_val
         tensor_lattice->VectorizeTensorLattice(true, psi[0]);
 
         old_energy = 10000.0;
-
+        
         for(int i=0;i<lanczos_iter;++i)
         {
             //tensor_lattice->PrintTensorLattice();
@@ -121,6 +122,15 @@ void RealTensorLanczos::LanczosMethod(int num_iter, int site, double& result_val
                     }
                 }
                 tensor_lattice->VectorizeTensorLattice(false, result_vector);
+                double norm = 0;
+                for(int i=0;i<psi_dim;++i)
+                {
+                    norm += result_vector[i]*result_vector[i];
+                }
+                if(fabs(norm-1.0) > 1E-6)
+                {
+                    cout << "false" << endl;
+                }
                 
                 delete[] result_vector;
                 break;
@@ -162,7 +172,9 @@ void RealTensorLanczos::VectorMultiply(double* vector1, double* vector2, int vec
 {
     result = 0.0;
     for(int i=0;i<vector_dim;++i)
+    {
         result += vector1[i]*vector2[i];
+    }
 }
 
 void RealTensorLanczos::VectorSubtraction(double* vector1, double* vector2, int vector_dim, double factor2)

@@ -340,7 +340,6 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
         
     }
     expan_tensor_lattice->ket_tensor_ = new ComplexMatrixBlock(num_block, left_index, right_index);
-
     delete[] exist_flag;
     delete[] leigh_block;
     for(int i=0;i<expan_tensor_lattice->get_num_left_block();++i)
@@ -369,6 +368,7 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
             
             // L*K (a_0*b_1)*(b_1*a_1) = (a_0*a_1)
             first_tensor = tmp_tensor[0]->MultiplyToMatrix(tmp_tensor[1]);
+            
             first_dim[0] = first_tensor->get_row();
             first_dim[1] = first_tensor->get_column();
 
@@ -387,7 +387,7 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
             {
                 ldx = expan_table[o2][jdx];
                 position = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(idx, ldx);
-
+                
                 if(ldx!=-1 && position!=-1)
                 {
                     p1 = expan_tensor_lattice->physics_index_[idx][ldx];
@@ -402,10 +402,11 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
                         expan_tensor = expan_tensor_lattice->ket_tensor_->matrix_block_[position];
                         if(expan_tensor->get_row() == 0)
                             expan_tensor->AddToMatrix(second_tensor);
-                        else 
+                        else
                             expan_tensor->ExpanMatrix(1, second_tensor);
                         delete second_tensor;
                     }
+
                 }
             }
             delete first_tensor;
@@ -420,7 +421,6 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
     for(int i=0;i<right_bond;++i)
         delete[] expan_table[i];
     delete[] expan_table;
-
     //---------------------------------------------------------------------------------------
     // re-compute right_dim
     for(int r=0;r<expan_tensor_lattice->get_num_right_block();++r)
@@ -433,6 +433,7 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
             {
                 expan_tensor = expan_tensor_lattice->ket_tensor_->matrix_block_[position];
                 expan_dim[1] = expan_tensor->get_column();
+                
                 if(expan_dim[1] > expan_tensor_lattice->right_dim_[r]) 
                     expan_tensor_lattice->right_dim_[r] = expan_dim[1];
             }
@@ -447,9 +448,19 @@ void ComplexTensorContraction::LeftExpanTensorContraction(ComplexTensorLattice* 
                 if(expan_tensor->get_row() == 0)
                 {
                     cout << "row of expan_tensor is zero in LeftExpanTensorContraction" << endl;
-                    first_tensor = new ComplexMatrix(expan_tensor_lattice->left_dim_[r], expan_tensor_lattice->right_dim_[r]);
+                    first_tensor = new ComplexMatrix(expan_tensor_lattice->left_dim_[l], expan_tensor_lattice->right_dim_[r]);
                     expan_tensor->AddToMatrix(first_tensor);
                     delete first_tensor;
+                }
+                else
+                {
+                    expan_dim[1] = expan_tensor_lattice->right_dim_[r] - expan_tensor->get_column();
+                    if(expan_dim[1] > 0)
+                    {
+                        first_tensor = new ComplexMatrix(expan_tensor->get_row(), expan_dim[1]);
+                        expan_tensor->ExpanMatrix(1, first_tensor);
+                        delete first_tensor;
+                    }
                 }
             }
         }
@@ -753,9 +764,19 @@ void ComplexTensorContraction::RightExpanTensorContraction(ComplexTensorLattice*
                 if(expan_tensor->get_row() == 0)
                 {
                     cout << "row of expan_tensor is zero in RightExpanTensorContraction" << endl;
-                    first_tensor = new ComplexMatrix(expan_tensor_lattice->left_dim_[r], expan_tensor_lattice->right_dim_[r]);
+                    first_tensor = new ComplexMatrix(expan_tensor_lattice->left_dim_[l], expan_tensor_lattice->right_dim_[r]);
                     expan_tensor->AddToMatrix(first_tensor);
                     delete first_tensor;
+                }
+                else
+                {
+                    expan_dim[0] = expan_tensor_lattice->left_dim_[l] - expan_tensor->get_row();
+                    if(expan_dim[0] > 0)
+                    {
+                        first_tensor = new ComplexMatrix(expan_dim[0], expan_tensor->get_column());
+                        expan_tensor->ExpanMatrix(0, first_tensor);
+                        delete first_tensor;
+                    }
                 }
             }
         }

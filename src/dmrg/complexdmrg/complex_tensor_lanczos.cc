@@ -41,6 +41,7 @@ void ComplexTensorLanczos::LanczosMethod(int num_iter, int site, double& result_
         }
         
         tensor_contraction->ComputeEffectHamilton(tensor_lattice, tensor_operator, eigenvector);
+        
         ComplexSymMatrixDiag(eigenvector, eigenvalue, psi_dim);
         
         result_value = eigenvalue[0];
@@ -74,10 +75,9 @@ void ComplexTensorLanczos::LanczosMethod(int num_iter, int site, double& result_
         tensor_lattice->VectorizeTensorLattice(true, psi[0]);
 
         old_energy = 10000.0;
-
+        
         for(int i=0;i<lanczos_iter;++i)
         {
-            //tensor_lattice->PrintTensorLattice();
             tensor_contraction->MultiplyEffectHamilton(tensor_lattice, tensor_operator, h_psi);
             // d = <psi|H|psi>
             VectorMultiply(psi[i], h_psi, psi_dim, diagonal_element[i]);
@@ -99,14 +99,15 @@ void ComplexTensorLanczos::LanczosMethod(int num_iter, int site, double& result_
                 if(j > 0)
                 {
                     eigenvector[j+(j-1)*lanczos_dim] = subdiagonal_element[j-1];
-                    eigenvector[(j-1)+j*lanczos_dim] = subdiagonal_element[j-1];
+                    //eigenvector[(j-1)+j*lanczos_dim] = subdiagonal_element[j-1];
                 }
             }
+            
             // diagonalize the tridiagonal matrix
             ComplexSymMatrixDiag(eigenvector, eigenvalue, lanczos_dim);
             new_energy = eigenvalue[0];
             
-            if(subdiagonal_element[i]<zero_tolerance || 
+            if(subdiagonal_element[i].real_<zero_tolerance || 
                fabs(new_energy-old_energy)<lanczos_precision ||
                lanczos_dim == lanczos_iter)
             {
@@ -135,7 +136,7 @@ void ComplexTensorLanczos::LanczosMethod(int num_iter, int site, double& result_
                 psi[i+1] = new Complex[psi_dim];
                 for(int j=0;j<psi_dim;++j)
                 {
-                    psi[i+1][j] = h_psi[j]/subdiagonal_element[i];
+                    psi[i+1][j] = h_psi[j]/subdiagonal_element[i].real_;
                     // ?h_psi[j] = diagonal_element[i]*psi[i][j];
                     h_psi[j] = -subdiagonal_element[i]*psi[i][j];
                 }
@@ -162,7 +163,9 @@ void ComplexTensorLanczos::VectorMultiply(Complex* vector1, Complex* vector2, in
 {
     result = 0.0;
     for(int i=0;i<vector_dim;++i)
-        result += vector1[i]*vector2[i];
+    {
+        result += Conj(vector1[i])*vector2[i];
+    }
 }
 
 void ComplexTensorLanczos::VectorSubtraction(Complex* vector1, Complex* vector2, int vector_dim, Complex factor2)

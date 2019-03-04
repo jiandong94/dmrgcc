@@ -190,7 +190,6 @@ void ComplexTensorHamiltonian::ParallelTensorHamiltonian()
 {
     ComplexMatrix* transfer_tensor;
     int num_unparallel, *position_unparallel;
-
     for(int i=0;i<num_site_mm_;++i)
     {
         tensor_hamiltonian_[i]->LeftParallelTensorOperator(num_unparallel, position_unparallel, 

@@ -333,7 +333,6 @@ void ComplexTensorSpace::ExpanTensorSpace(int leigh, int site)
     {
         cout << "choose the wrong site in ExpanTensorLattice!" << endl;
     }
-
     origin_tensor_lattice = new ComplexTensorLattice(tensor_lattice_[site]);
     if(leigh == 0)
     {
@@ -351,10 +350,12 @@ void ComplexTensorSpace::ExpanTensorSpace(int leigh, int site)
         tensor_lattice_[site]->CombineTensorLattice(0, num_left_block, left_block, 
                 left_dim, expan_tensor_lattice_);
     }
-
+    
     tensor_lattice_[site]->DefineTensorLattice(num_left_block, num_right_block, 
             left_block, right_block, left_dim, right_dim);
+    //cout << "ok1" << endl;
     ComputeTensorIndex(site, num_block, left_index, right_index, physics_index);
+    //cout << "ok2" << endl;
     tensor_lattice_[site]->DefineTensorLattice(num_block, left_index, right_index, 
             physics_index, 1, 1);
     tensor_lattice_[site]->ResetTensorLattice();
@@ -365,6 +366,7 @@ void ComplexTensorSpace::ExpanTensorSpace(int leigh, int site)
     else if(leigh == 1)
         tensor_lattice_[site]->RightExpanTensorLattice(origin_tensor_lattice, 
                                                       expan_tensor_lattice_);
+    
     delete expan_tensor_lattice_;
     expan_tensor_lattice_ = nullptr;
 
@@ -508,6 +510,7 @@ void ComplexTensorSpace::ComputeTensorIndex(int site, int &num_block, int* &left
     int num_left_block, num_right_block, *left_block, *right_block, **left_quantum_table, 
         **right_quantum_table, info;
     
+    cout << "ok1" << endl;
     num_left_block = tensor_lattice_[site]->get_num_left_block();
     num_right_block = tensor_lattice_[site]->get_num_right_block();
     left_block = tensor_lattice_[site]->get_left_block();
@@ -516,9 +519,12 @@ void ComplexTensorSpace::ComputeTensorIndex(int site, int &num_block, int* &left
     left_quantum_table = quantum_table_[site];
     right_quantum_table = quantum_table_[site+1];
 
+    cout << "ok2" << endl;
     num_block = 0;
     for(int i=0;i<num_left_block;++i) for(int j=0;j<num_right_block;++j)
-    {  
+    { 
+        cout << left_quantum_table[left_block[i]][0]<< ", " << 
+            right_quantum_table[right_block[j]][0] << endl;
         info = CheckQuantumTable(site, left_quantum_table[left_block[i]], 
                                        right_quantum_table[right_block[j]]);
         if(info != -1)
@@ -527,6 +533,7 @@ void ComplexTensorSpace::ComputeTensorIndex(int site, int &num_block, int* &left
         }
     }
 
+    cout << "ok3" << endl;
     left_index = new int[num_block];
     right_index = new int[num_block];
     physics_index = new int[num_block];
@@ -692,7 +699,6 @@ void ComplexTensorSpace::ComputeExpanTensorLattice(int leigh, int site, int oper
     }
     expan_tensor_lattice_->DefineTensorLattice(num_block, left_index, right_index, physics_index, 1, 1);
     expan_tensor_lattice_->ResetTensorLattice();
-
     delete[] leigh_block;
     delete[] left_dim;
     delete[] right_dim;
@@ -725,7 +731,10 @@ void ComplexTensorSpace::ReorderQuantumTable(int num_quantum, int num_table, int
             deviate[i]+=pow(quantum_table[i][j]-mean_quantum[j],2);
     }
     
-    QuickSort(deviate, index, 0, num_table-1, 1);
+    QuickSort<double>(deviate, index, 0, num_table-1, 1);
+    //for(int i=0;i<num_table;++i)
+    //    cout << deviate[i] << ", " ;
+    //cout << endl;
     ReorderRelevantArray(num_quantum, num_table, quantum_table, index);
     
     delete[] deviate;

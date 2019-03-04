@@ -35,6 +35,8 @@ class Complex
     friend double SquareNorm(const Complex& z);
 
     friend Complex Conj(const Complex& z);
+    
+    friend Complex Phase(double theta);
 
     Complex& operator += (const Complex& z);
     Complex& operator -= (const Complex& z);
@@ -60,12 +62,12 @@ class Complex
     friend Complex operator + (const Complex &z);
     friend Complex operator - (const Complex &z);
 
-    friend bool operator < (const Complex& z1, const Complex& z2);
-    friend bool operator <= (const Complex& z1, const Complex& z2);
-    friend bool operator > (const Complex& z1, const Complex& z2);
-    friend bool operator >= (const Complex& z1, const Complex& z2);
-    friend bool operator == (const Complex& z1, const Complex& z2);
-    friend bool operator != (const Complex& z1, const Complex& z2);
+    //friend bool operator < (const Complex& z1, const Complex& z2);
+    //friend bool operator <= (const Complex& z1, const Complex& z2);
+    //friend bool operator > (const Complex& z1, const Complex& z2);
+    //friend bool operator >= (const Complex& z1, const Complex& z2);
+    //friend bool operator == (const Complex& z1, const Complex& z2);
+    //friend bool operator != (const Complex& z1, const Complex& z2);
     
     Complex& operator = (const Complex& z);
     Complex& operator = (double r);
@@ -122,6 +124,10 @@ inline Complex Conj(const Complex& z)
     return Complex(z.real_, -z.imag_);
 }
 
+inline Complex Phase(double theta)
+{
+    return Complex(cos(theta), sin(theta));
+}
 //----------------------operator-------------------------
 //
 inline Complex& Complex::operator+= (const Complex& z)
@@ -255,6 +261,7 @@ inline Complex operator- (const Complex& z)
     return Complex(-z.real_, -z.imag_);
 }
 
+/*
 inline bool operator < (const Complex& z1, const Complex& z2)
 {
     return ((z1.real_ < z2.real_) || ((z1.real_ == z2.real_) && (z1.imag_ < z2.imag_)));
@@ -274,7 +281,7 @@ inline bool operator >= (const Complex& z1, const Complex& z2)
 {
     return ((z1.real_ > z2.real_) || ((z1.real_ == z2.real_) && (z1.imag_ >= z2.imag_)));
 }
-
+*/
 inline bool operator == (const Complex& z1, const Complex& z2)
 {
     return ((z1.real_ == z2.real_) && (z1.imag_ == z2.imag_));

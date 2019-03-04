@@ -66,7 +66,31 @@ void ReorderRelevantArray(int num_quantum, int num_table, int** quantum_table,
 void RealSymMatrixDiag(double* eigenvector, double* eigenvalue, int vector_dim);
 
 void ComplexSymMatrixDiag(Complex* eigenvector, double* eigenvalue, int vector_dim);
-
+// complex matrix diagonal
+//
+inline void CompMatrixDiagon(Complex* eigenVector,double* eigenValue, int vectorDimen)
+{
+    char Jobz,UpLo;
+    Complex *ComWorkArea;
+    double *DouWorkArea;
+    int *IntWorkArea,ComWorkSize,DouWorkSize,IntWorkSize,Info;
+    
+    Jobz='V';UpLo='L';
+    
+    ComWorkSize=vectorDimen*vectorDimen+2*vectorDimen;
+    DouWorkSize=2*vectorDimen*vectorDimen+5*vectorDimen+1;
+    IntWorkSize=5*vectorDimen+3;
+    
+    ComWorkArea=new Complex[ComWorkSize];
+    DouWorkArea=new double[DouWorkSize];
+    IntWorkArea=new int[IntWorkSize];
+    
+    zheevd(&Jobz,&UpLo,&vectorDimen,eigenVector,&vectorDimen,eigenValue,ComWorkArea,&ComWorkSize,DouWorkArea,&DouWorkSize,IntWorkArea,&IntWorkSize,&Info);
+    
+    delete[] ComWorkArea;
+    delete[] DouWorkArea;
+    delete[] IntWorkArea;
+}
 
 inline double get_wall_time()
 {

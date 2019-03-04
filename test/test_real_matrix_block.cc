@@ -6,7 +6,7 @@ int main()
     cout << "       Test RealMatrixBlock      " << endl;
     cout << "=================================" << endl;
 
-    srand((unsigned)time(NULL));
+    //srand((unsigned)time(NULL));
 
 
     cout << "1. Constructor" << endl;
