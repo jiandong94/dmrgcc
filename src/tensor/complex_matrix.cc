@@ -223,7 +223,7 @@ void ComplexMatrix::AddToMatrixElement(int row, int column, Complex element)
     matrix_element_[row*column_+column] += element;
 }
 
-void ComplexMatrix::AddToMatrix(ComplexMatrix* tmp_matrix)
+void ComplexMatrix::AddToMatrix(const ComplexMatrix* tmp_matrix)
 {
     if(tmp_matrix == nullptr || tmp_matrix->total_element_num_ == 0) 
     {
@@ -253,7 +253,7 @@ void ComplexMatrix::AddToMatrix(ComplexMatrix* tmp_matrix)
 }
 
 
-void ComplexMatrix::AddToMatrix(Complex factor, ComplexMatrix* tmp_matrix)
+void ComplexMatrix::AddToMatrix(Complex factor,const ComplexMatrix* tmp_matrix)
 {
     if(tmp_matrix == nullptr || tmp_matrix->total_element_num_ == 0) 
     {

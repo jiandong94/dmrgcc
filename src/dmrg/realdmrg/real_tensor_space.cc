@@ -343,7 +343,7 @@ void RealTensorSpace::ExpanTensorSpace(int leigh, int site)
         tensor_lattice_[site]->CombineTensorLattice(1, num_right_block, right_block, 
                 right_dim, expan_tensor_lattice_);
     }
-    if(leigh == 1)
+    else if(leigh == 1)
     {
         num_right_block = origin_tensor_lattice->get_num_right_block();
         right_block = origin_tensor_lattice->get_right_block();

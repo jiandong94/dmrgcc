@@ -106,11 +106,11 @@ class ComplexMatrix
 
     // add the matrix to matrix
     //
-    void AddToMatrix(ComplexMatrix* tmp_matrix);
+    void AddToMatrix(const ComplexMatrix* tmp_matrix);
    
     // matrix + factor*tmp_matrix
     //
-    void AddToMatrix(Complex factor, ComplexMatrix* tmp_matrix);
+    void AddToMatrix(Complex factor, const ComplexMatrix* tmp_matrix);
 
     // matrix * scalar
     //

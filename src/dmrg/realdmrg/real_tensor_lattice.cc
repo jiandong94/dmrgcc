@@ -420,10 +420,10 @@ void RealTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block, in
     num_leigh_block = tmp_num_leigh_block[0];
 
     // compute new num_leigh_block
-    for(int i=0;i<tmp_num_leigh_block[0];++i)
+    for(int j=0;j<tmp_num_leigh_block[1];++j)
     {
         flag = false;
-        for(int j=0;j<tmp_num_leigh_block[1];++j)
+        for(int i=0;i<tmp_num_leigh_block[1];++i)
         {
             if(tmp_leigh_block[0][i] == tmp_leigh_block[1][j]) 
             {
@@ -450,7 +450,7 @@ void RealTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block, in
                 break;
             }
         }
-        if(flag = false)
+        if(flag == false)
         {
             leigh_block[k] = tmp_leigh_block[1][j];
             k++;
@@ -1026,10 +1026,13 @@ void RealTensorLattice::LeftExpanTensorLattice(RealTensorLattice* tmp_tensor_lat
                 if(enable_expan[1] != -1)
                 {
                     position_expan[1] = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(l, enable_expan[1]);
-                    if(position_expan[0] != -1)
+                    if(position_expan[1] != -1)
                     {
                         expan_tensor = expan_tensor_lattice->ket_tensor_->get_matrix_block(position_expan[1]);
-                        origin_tensor->ExpanMatrix(1, expan_tensor);
+                        if(origin_tensor->get_row() == 0)
+                            origin_tensor->AddToMatrix(expan_tensor);
+                        else
+                            origin_tensor->ExpanMatrix(1, expan_tensor);
                     }
 
                 }
@@ -1110,10 +1113,13 @@ void RealTensorLattice::RightExpanTensorLattice(RealTensorLattice* tmp_tensor_la
                 if(enable_expan[1] != -1)
                 {
                     position_expan[1] = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(enable_expan[1], r);
-                    if(position_expan[0] != -1)
+                    if(position_expan[1] != -1)
                     {
                         expan_tensor = expan_tensor_lattice->ket_tensor_->get_matrix_block(position_expan[1]);
-                        origin_tensor->ExpanMatrix(0, expan_tensor);
+                        if(origin_tensor->get_row() == 0)
+                            origin_tensor->AddToMatrix(expan_tensor);
+                        else
+                            origin_tensor->ExpanMatrix(0, expan_tensor);
                     }
 
                 }

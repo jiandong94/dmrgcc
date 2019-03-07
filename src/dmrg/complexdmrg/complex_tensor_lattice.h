@@ -136,8 +136,8 @@ class ComplexTensorLattice
 
     //
     //
-    void DefineTensorLattice(int num_left_block, int num_right_block, 
-         int* left_block, int* right_block, int* left_dim, int* right_dim);
+    void DefineTensorLattice(const int num_left_block, const int num_right_block, 
+         const int* left_block, const int* right_block, const int* left_dim, const int* right_dim);
 
     //
     //
@@ -206,8 +206,8 @@ class ComplexTensorLattice
 
     //
     //
-    void LeftExpanTensorLattice(ComplexTensorLattice* tmp_tensor_lattice, 
-            ComplexTensorLattice* expan_tensor_lattice);
+    void LeftExpanTensorLattice(const ComplexTensorLattice* tmp_tensor_lattice, 
+            const ComplexTensorLattice* expan_tensor_lattice);
 
     //
     //

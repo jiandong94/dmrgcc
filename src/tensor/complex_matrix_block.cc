@@ -100,7 +100,6 @@ ComplexMatrixBlock::~ComplexMatrixBlock()
     {
         delete[] left_index_;
         delete[] right_index_;
-
         for(int i=0;i<num_block_;++i) delete matrix_block_[i];
 
         delete[] matrix_block_;

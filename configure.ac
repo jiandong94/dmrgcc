@@ -105,6 +105,10 @@ else
     AC_MSG_RESULT([using defaults])
 fi
 
+AC_ARG_ENABLE(gprof, [AC_HELP_STRING([--enable-gprof], [enable gprof mode])], [HAVE_GPROF=$enableval 
+CXXFLAGS="${CXXFLAGS} -pg"], 
+[HAVE_GPROF=no])
+
 INCLUDES="-I\$(top_srcdir)/src -I\$(top_srcdir)/include -I\$(top_srcdir)"
 SRCDIR="\$(top_srcdir)/src"
 

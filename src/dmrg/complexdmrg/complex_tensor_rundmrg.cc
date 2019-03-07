@@ -49,7 +49,6 @@ ComplexTensorRundmrg::ComplexTensorRundmrg(ComplexTensorSpace* space, ComplexTen
         // left canonical
         space_->DefineTensorSpace(first_block, first_dim);
     }
-    //space->PrintTensorSpace();
     // hamiltonian
     hamiltonian_->DefineTensorHamiltonian();
     //hamiltonian_->PrintTensorHamiltonian();
@@ -149,7 +148,6 @@ void ComplexTensorRundmrg::Run()
         for(int j=0;j<num_site_mm_;++j)
         {
             lanczos->LanczosMethod(num_iter_[2*i], j, energy);
-            cout << "energy: " << energy << endl;
             network_->ResetTensorNetwork(right, j);
             network_->RemoveTensorNetwork(right, j);
             
@@ -188,7 +186,6 @@ void ComplexTensorRundmrg::Run()
         for(int j=num_site_mm_;j>0;--j)
         {
             lanczos->LanczosMethod(num_iter_[2*i+1], j, energy);
-            cout << "energy: " << energy << endl;
 
             network_->ResetTensorNetwork(left, j);
             network_->RemoveTensorNetwork(left, j);

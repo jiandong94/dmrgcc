@@ -5,7 +5,7 @@ input
     Nup = 4
     Ndown = 4
     physics_dim = 2
-    flux = 0.4
+    flux = 0.2
     Jx = -1.0
     Jy = -1.0
     U_uu = 0

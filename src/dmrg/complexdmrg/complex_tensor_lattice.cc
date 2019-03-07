@@ -89,7 +89,7 @@ ComplexTensorLattice::~ComplexTensorLattice()
 
     delete[] right_block_;
     delete[] right_dim_;
-
+    
     for(int i=0;i<num_left_block_;++i) delete[] physics_index_[i];
     delete[] physics_index_;
 
@@ -297,8 +297,8 @@ void ComplexTensorLattice::ReadTensorLattice(ifstream &tensor_lattice_file)
     canonical_tensor_ = nullptr;
 }
 
-void ComplexTensorLattice::DefineTensorLattice(int num_left_block, int num_right_block, 
-     int* left_block, int* right_block, int* left_dim, int* right_dim)
+void ComplexTensorLattice::DefineTensorLattice(const int num_left_block, const int num_right_block, 
+     const int* left_block, const int* right_block, const int* left_dim, const int* right_dim)
 {
     delete[] left_block_;
     delete[] left_dim_;
@@ -374,7 +374,7 @@ void ComplexTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block,
         {
             if(right_block_[r] != expan_tensor_lattice->right_block_[r])
             {
-                cout << "right_block_ is not equal to expan_tensor_lattice in CimbineTensorLattice!" << endl;
+                cout << "right_block_ is not equal to expan_tensor_lattice in CombineTensorLattice!" << endl;
                 exit(-1);
             }
         }
@@ -390,7 +390,7 @@ void ComplexTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block,
         {
             if(left_block_[l] != expan_tensor_lattice->left_block_[l])
             {
-                cout << "left_block_ is not equal to expan_tensor_lattice in CimbineTensorLattice!" << endl;
+                cout << "left_block_ is not equal to expan_tensor_lattice in CombineTensorLattice!" << endl;
                 exit(-1);
             }
         }
@@ -416,14 +416,13 @@ void ComplexTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block,
         tmp_leigh_block[1] = expan_tensor_lattice->right_block_;
         tmp_leigh_dim[1] = expan_tensor_lattice->right_dim_;
     }
-
     num_leigh_block = tmp_num_leigh_block[0];
 
     // compute new num_leigh_block
-    for(int i=0;i<tmp_num_leigh_block[0];++i)
+    for(int j=0;j<tmp_num_leigh_block[1];++j)
     {
         flag = false;
-        for(int j=0;j<tmp_num_leigh_block[1];++j)
+        for(int i=0;i<tmp_num_leigh_block[0];++i)
         {
             if(tmp_leigh_block[0][i] == tmp_leigh_block[1][j]) 
             {
@@ -450,7 +449,7 @@ void ComplexTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block,
                 break;
             }
         }
-        if(flag = false)
+        if(flag == false)
         {
             leigh_block[k] = tmp_leigh_block[1][j];
             k++;
@@ -480,7 +479,6 @@ void ComplexTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block,
             }
         }
     }
-
 }
 
 void ComplexTensorLattice::ResetTensorLattice()
@@ -977,8 +975,8 @@ void ComplexTensorLattice::RightMergeTensorLattice(ComplexTensorLattice* tmp_ten
     tmp_tensor_lattice->canonical_tensor_ = nullptr;
 }
 
-void ComplexTensorLattice::LeftExpanTensorLattice(ComplexTensorLattice* tmp_tensor_lattice, 
-        ComplexTensorLattice* expan_tensor_lattice)
+void ComplexTensorLattice::LeftExpanTensorLattice(const ComplexTensorLattice* tmp_tensor_lattice, 
+        const ComplexTensorLattice* expan_tensor_lattice)
 {
     ComplexMatrix *origin_tensor, *tmp_tensor, *expan_tensor;
     int position, enable_expan[2], position_expan[2], expan_dim;
@@ -1027,10 +1025,13 @@ void ComplexTensorLattice::LeftExpanTensorLattice(ComplexTensorLattice* tmp_tens
                 if(enable_expan[1] != -1)
                 {
                     position_expan[1] = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(l, enable_expan[1]);
-                    if(position_expan[0] != -1)
+                    if(position_expan[1] != -1)
                     {
                         expan_tensor = expan_tensor_lattice->ket_tensor_->get_matrix_block(position_expan[1]);
-                        origin_tensor->ExpanMatrix(1, expan_tensor);
+                        if(origin_tensor->get_row() == 0)
+                            origin_tensor->AddToMatrix(expan_tensor);
+                        else
+                            origin_tensor->ExpanMatrix(1, expan_tensor);
                     }
 
                 }
@@ -1111,10 +1112,13 @@ void ComplexTensorLattice::RightExpanTensorLattice(ComplexTensorLattice* tmp_ten
                 if(enable_expan[1] != -1)
                 {
                     position_expan[1] = expan_tensor_lattice->ket_tensor_->FindMatrixBlock(enable_expan[1], r);
-                    if(position_expan[0] != -1)
+                    if(position_expan[1] != -1)
                     {
                         expan_tensor = expan_tensor_lattice->ket_tensor_->get_matrix_block(position_expan[1]);
-                        origin_tensor->ExpanMatrix(0, expan_tensor);
+                        if(origin_tensor->get_row() == 0)
+                            origin_tensor->AddToMatrix(expan_tensor);
+                        else
+                            origin_tensor->ExpanMatrix(0, expan_tensor);
                     }
 
                 }

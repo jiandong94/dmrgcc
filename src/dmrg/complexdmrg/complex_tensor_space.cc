@@ -334,28 +334,27 @@ void ComplexTensorSpace::ExpanTensorSpace(int leigh, int site)
         cout << "choose the wrong site in ExpanTensorLattice!" << endl;
     }
     origin_tensor_lattice = new ComplexTensorLattice(tensor_lattice_[site]);
-    if(leigh == 0)
+    if(leigh==0)
     {
         num_left_block = origin_tensor_lattice->get_num_left_block();
         left_block = origin_tensor_lattice->get_left_block();
         left_dim = origin_tensor_lattice->get_left_dim();
         tensor_lattice_[site]->CombineTensorLattice(1, num_right_block, right_block, 
                 right_dim, expan_tensor_lattice_);
+        //cout << "ket_tensor " << origin_tensor_lattice->get_ket_tensor() << endl;
     }
-    if(leigh == 1)
+    else if(leigh==1)
     {
+        tensor_lattice_[site]->CombineTensorLattice(0, num_left_block, left_block, 
+                left_dim, expan_tensor_lattice_);
         num_right_block = origin_tensor_lattice->get_num_right_block();
         right_block = origin_tensor_lattice->get_right_block();
         right_dim = origin_tensor_lattice->get_right_dim();
-        tensor_lattice_[site]->CombineTensorLattice(0, num_left_block, left_block, 
-                left_dim, expan_tensor_lattice_);
     }
-    
+     
     tensor_lattice_[site]->DefineTensorLattice(num_left_block, num_right_block, 
             left_block, right_block, left_dim, right_dim);
-    //cout << "ok1" << endl;
     ComputeTensorIndex(site, num_block, left_index, right_index, physics_index);
-    //cout << "ok2" << endl;
     tensor_lattice_[site]->DefineTensorLattice(num_block, left_index, right_index, 
             physics_index, 1, 1);
     tensor_lattice_[site]->ResetTensorLattice();
@@ -369,15 +368,15 @@ void ComplexTensorSpace::ExpanTensorSpace(int leigh, int site)
     
     delete expan_tensor_lattice_;
     expan_tensor_lattice_ = nullptr;
-
+    
     delete origin_tensor_lattice;
 
-    if(leigh == 0) 
+    if(leigh==0 && site<num_site_mm_) 
     {
         delete[] right_block;
         delete[] right_dim;
     }
-    else if(leigh == 1) 
+    else if(leigh==1 && site>0) 
     {
         delete[] left_block;
         delete[] left_dim;
@@ -482,7 +481,6 @@ void ComplexTensorSpace::ComputeLatticeBlock(int site, int &num_left_block, int 
         if(num_right_block == max_block_)
             break;
     }
-
     // compute right block
     right_block = new int[num_right_block];
     int k = 0;
@@ -510,7 +508,6 @@ void ComplexTensorSpace::ComputeTensorIndex(int site, int &num_block, int* &left
     int num_left_block, num_right_block, *left_block, *right_block, **left_quantum_table, 
         **right_quantum_table, info;
     
-    cout << "ok1" << endl;
     num_left_block = tensor_lattice_[site]->get_num_left_block();
     num_right_block = tensor_lattice_[site]->get_num_right_block();
     left_block = tensor_lattice_[site]->get_left_block();
@@ -519,12 +516,14 @@ void ComplexTensorSpace::ComputeTensorIndex(int site, int &num_block, int* &left
     left_quantum_table = quantum_table_[site];
     right_quantum_table = quantum_table_[site+1];
 
-    cout << "ok2" << endl;
     num_block = 0;
     for(int i=0;i<num_left_block;++i) for(int j=0;j<num_right_block;++j)
-    { 
-        cout << left_quantum_table[left_block[i]][0]<< ", " << 
-            right_quantum_table[right_block[j]][0] << endl;
+    {
+        //cout << "Site: " << site << endl;
+        //cout << num_left_block << ", " << num_right_block << endl;
+        //cout << left_block[i] << ", " << right_block[j] << endl;
+        //cout << left_quantum_table[left_block[i]][0]<< ", " << 
+        //    right_quantum_table[right_block[j]][0] << endl;
         info = CheckQuantumTable(site, left_quantum_table[left_block[i]], 
                                        right_quantum_table[right_block[j]]);
         if(info != -1)
@@ -533,7 +532,6 @@ void ComplexTensorSpace::ComputeTensorIndex(int site, int &num_block, int* &left
         }
     }
 
-    cout << "ok3" << endl;
     left_index = new int[num_block];
     right_index = new int[num_block];
     physics_index = new int[num_block];
