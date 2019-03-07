@@ -97,6 +97,20 @@ if test X${HAVE_PKG_MKL} = Xyes; then
 fi
 
 # Checks for library functions.
+CXXFLAGS="-g -O3 -W -Wall -msse2 -msse3 -msse4"
+
+AC_ARG_ENABLE(gprof, [AC_HELP_STRING([--enable-gprof], [enable gprof mode])], [HAVE_GPROF=$enableval 
+CXXFLAGS="${CXXFLAGS} -pg"], 
+[HAVE_GPROF=no])
+AC_MSG_CHECKING(whether we are using gprof)
+AC_MSG_RESULT([${HAVE_GPROF}])
+
+AC_ARG_ENABLE(gcov, [AC_HELP_STRING([--enable-gcov], [enable gprof mode])], [HAVE_GCOV=$enableval 
+CXXFLAGS="${CXXFLAGS} -fprofile-arcs -ftest-coverage"], 
+[HAVE_GCOV=no])
+AC_MSG_CHECKING(whether we are using gcov)
+AC_MSG_RESULT([${HAVE_GCOV}])
+
 AC_MSG_CHECKING(environment for CXXFLAGS)
 if test -n "${CXXFLAGS}"; then
     AC_MSG_RESULT([${CXXFLAGS}])
@@ -104,10 +118,6 @@ else
     CXXFLAGS=" -O3 -W -Wall -msse2 -msse3 -msse4"
     AC_MSG_RESULT([using defaults])
 fi
-
-AC_ARG_ENABLE(gprof, [AC_HELP_STRING([--enable-gprof], [enable gprof mode])], [HAVE_GPROF=$enableval 
-CXXFLAGS="${CXXFLAGS} -pg"], 
-[HAVE_GPROF=no])
 
 INCLUDES="-I\$(top_srcdir)/src -I\$(top_srcdir)/include -I\$(top_srcdir)"
 SRCDIR="\$(top_srcdir)/src"
