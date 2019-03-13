@@ -1159,7 +1159,7 @@ void ComplexTensorContraction::ComputeEffectHamilton(ComplexTensorLattice* tenso
 {
     ComplexMatrix *inv_tensor, *result_tensor, *tmp_tensor[2];
     Complex element, *matrix_element;
-    int left_bond, right_bond, num_left_block, num_right_block;
+    int left_bond, right_bond;
     int vector_dim, position[2], result_dim[2], part_dim[2];
     int p1, p2, idx, jdx, kdx, ldx;
 
@@ -1167,8 +1167,6 @@ void ComplexTensorContraction::ComputeEffectHamilton(ComplexTensorLattice* tenso
 
     left_bond = tensor_operator->get_left_bond();
     right_bond = tensor_operator->get_right_bond();
-    num_left_block = tensor_lattice->get_num_left_block();
-    num_right_block = tensor_lattice->get_num_right_block();
     for(int o1=0;o1<left_bond;++o1)
     for(int i=0;i<left_contraction_tensor_[o1]->get_num_block();++i)
     {
@@ -1248,13 +1246,12 @@ void ComplexTensorContraction::MultiplyEffectHamilton(ComplexTensorLattice* tens
 {
     ComplexMatrix *first_tensor, *second_tensor, *tmp_tensor[3];
     Complex *matrix_element, element;
-    int left_bond, right_bond, num_left_block, num_right_block;
+    int left_bond, right_bond, num_right_block;
     int *num_same_index, **position_same_index, part_dim, position, total_element_num, p1, p2, idx, jdx, ldx, kdx;
 
 
     left_bond = tensor_operator->get_left_bond();
     right_bond = tensor_operator->get_right_bond();
-    num_left_block = tensor_lattice->get_num_left_block();
     num_right_block = tensor_lattice->get_num_right_block();
 
     // for each right index(block), find all possible left indiced(blocks)

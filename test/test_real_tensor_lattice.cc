@@ -28,7 +28,10 @@ int main()
     tensor_lattice->DefineTensorLattice(num_left_block, num_right_block, 
             left_block, right_block, left_dim, right_dim);
     tensor_lattice->PrintTensorLattice();
-    delete[] left_block, right_block, left_dim, right_dim;
+    delete[] left_block;
+    delete[] right_block;
+    delete[] left_dim;
+    delete[] right_dim;
 
     cout << endl;
     cout << "DefineTensorLattice (ket tensor)" << endl;

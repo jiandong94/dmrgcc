@@ -14,13 +14,13 @@ class RealTensorRundmrg
     RealTensorNetwork* network_;
 
     bool disk_cache_;
-    char cache_name_[512];
+    char cache_name_[1024];
     bool cache_record_;
-    char record_name_[512];
+    char record_name_[1024];
     bool cache_resume_;
-    char resume_name_[512];
+    char resume_name_[1024];
     bool record_process_;
-    char process_name_[512];
+    char process_name_[1024];
 
 
     int num_site_;

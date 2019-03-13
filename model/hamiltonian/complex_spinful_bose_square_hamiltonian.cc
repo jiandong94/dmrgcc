@@ -298,7 +298,7 @@ void ComplexSpinfulBoseSquareHamiltonian::DefineTensorHamiltonian()
         {
             p[1] = (j+1)%num_site_y_+i*num_site_y_;
 
-            phase = Phase(2*M_PI*(i)*flux_[0]);
+            phase = Phase(2*M_PI*(i+1)*flux_[0]);
 
             if(j+1 < num_site_y_)
             {
@@ -316,7 +316,7 @@ void ComplexSpinfulBoseSquareHamiltonian::DefineTensorHamiltonian()
         {
             p[1] = (j+1)%num_site_y_+i*num_site_y_;
 
-            phase = Phase(2*M_PI*(i)*flux_[1]);
+            phase = Phase(2*M_PI*(i+1)*flux_[1]);
 
             if(j+1 < num_site_y_)
             {
@@ -342,7 +342,7 @@ void ComplexSpinfulBoseSquareHamiltonian::DefineTensorHamiltonian()
         
         if(inter_value_[2]!=0.0)
         {
-            DefineHamiltonian4(2*p[0]+1, 2*p[0]+1, inter_value_[2]);
+            DefineHamiltonian4(2*p[0], 2*p[0]+1, inter_value_[2]);
         }
         ParallelTensorHamiltonian();
     }

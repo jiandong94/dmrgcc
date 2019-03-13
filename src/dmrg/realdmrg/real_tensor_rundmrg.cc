@@ -118,8 +118,7 @@ void RealTensorRundmrg::Run()
     ofstream process_file;
     double start_time, end_time;
     double energy;
-    char label[512], tensor_name[512], record_name[512];
-    int dummy;
+    char label[2048], tensor_name[2048], record_name[2048];
     cout.setf(ios::fixed);
     cout.precision(12);
     
@@ -219,7 +218,7 @@ void RealTensorRundmrg::Run()
         if(disk_cache_ == true)
         {
             sprintf(label, "rm -rf %s/TensorSpace_sweep_*.dat", cache_name_);
-            dummy = system(label);
+            system(label);
  
             sprintf(tensor_name, "%s/TensorSpace_sweep_%d.dat", cache_name_, i);
             space_->RecordTensorSpace(0);
@@ -236,7 +235,7 @@ void RealTensorRundmrg::Run()
         if(disk_cache_ == true)
         {
             sprintf(label, "rm -rf %s/TensorSpace_sweep_*.dat", cache_name_);
-            dummy = system(label);
+            system(label);
         }
 
     }

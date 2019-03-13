@@ -81,7 +81,7 @@ void RealTensorNetwork::PrintTensorNetwork()
 
 void RealTensorNetwork::RecordTensorNetwork(int leigh, int site)
 {
-    char tensor_name[512];
+    char tensor_name[2048];
 
     sprintf(tensor_name, "%s/NetworkDiskCacheFile/TensorNetwork_leigh_%d_site_%d.dat", 
                           cache_name_, leigh, site);
@@ -91,7 +91,7 @@ void RealTensorNetwork::RecordTensorNetwork(int leigh, int site)
 
 void RealTensorNetwork::ResumeTensorNetwork(int leigh, int site)
 {
-    char tensor_name[512];
+    char tensor_name[2048];
 
     sprintf(tensor_name, "%s/NetworkDiskCacheFile/TensorNetwork_leigh_%d_site_%d.dat", 
                           cache_name_, leigh, site);
@@ -101,8 +101,9 @@ void RealTensorNetwork::ResumeTensorNetwork(int leigh, int site)
 
 void RealTensorNetwork::RemoveTensorNetwork(int leigh, int site)
 {
-    char command[512];
+    char command[2048];
     int info;
+    (void)info;
 
     if(disk_cache_ == true)
     {

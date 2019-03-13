@@ -5425,7 +5425,7 @@ fi
 fi
 
 # Checks for library functions.
-CXXFLAGS="-g -O3 -W -Wall -msse2 -msse3 -msse4"
+CXXFLAGS="-fopenmp -g -O3 -W -Wall -msse2 -msse3 -msse4"
 
 # Check whether --enable-gprof was given.
 if test "${enable_gprof+set}" = set; then :

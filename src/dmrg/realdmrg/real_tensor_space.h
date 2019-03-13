@@ -10,7 +10,7 @@ class RealTensorSpace
 
     // disk cache
     bool disk_cache_ = false;
-    char cache_name_[512];
+    char cache_name_[1024];
 
     // number of sites
     int num_site_;

@@ -97,7 +97,7 @@ if test X${HAVE_PKG_MKL} = Xyes; then
 fi
 
 # Checks for library functions.
-CXXFLAGS="-g -O3 -W -Wall -msse2 -msse3 -msse4"
+CXXFLAGS="-fopenmp -g -O3 -W -Wall -msse2 -msse3 -msse4"
 
 AC_ARG_ENABLE(gprof, [AC_HELP_STRING([--enable-gprof], [enable gprof mode])], [HAVE_GPROF=$enableval 
 CXXFLAGS="${CXXFLAGS} -pg"], 

@@ -278,7 +278,7 @@ void RealTensorSpace::ReadTensorSpace(ifstream &tensor_space_file)
 
 void RealTensorSpace::RecordTensorSpace(int site)
 {
-    char tensor_lattice_name[512];
+    char tensor_lattice_name[2048];
 
     sprintf(tensor_lattice_name, "%s/SpaceDiskCacheFile/Tensor_Space_%d.dat", cache_name_, site);
 
@@ -288,7 +288,7 @@ void RealTensorSpace::RecordTensorSpace(int site)
 
 void RealTensorSpace::ResumeTensorSpace(int site)
 {
-    char tensor_lattice_name[512];
+    char tensor_lattice_name[2048];
 
     sprintf(tensor_lattice_name, "%s/SpaceDiskCacheFile/Tensor_Space_%d.dat", cache_name_, site);
 
@@ -389,8 +389,9 @@ void RealTensorSpace::ExpanTensorSpace(int leigh, int site)
 void RealTensorSpace::MatchTensorSpace(int leigh, int site)
 {
     RealTensorLattice *origin_tensor_lattice;
-    int num_left_block, num_right_block, *left_block, *right_block, *left_dim, *right_dim;
-    int num_block, *left_index, *right_index, *physics_index;
+    int num_left_block=0, num_right_block=0, *left_block=nullptr, *right_block=nullptr, 
+        *left_dim=nullptr, *right_dim=nullptr;
+    int num_block, *left_index=nullptr, *right_index=nullptr, *physics_index=nullptr;
 
     if(max_block_<0||max_dim_<0||noise_factor_>1) return;
     
@@ -552,14 +553,16 @@ void RealTensorSpace::ComputeExpanTensorLattice(int leigh, int site, int operato
         int **operator_quantum_table, int** &mapping_table)
 {
     bool *merge_flag;
-    int num_left_table, num_right_table, **left_quantum_table, **right_quantum_table;
-    int num_leigh_table, **leigh_quantum_table, num_leigh_block, *leigh_block, old_num_leigh_block, *old_leigh_block;
+    //int num_left_table, num_right_table;
+    int **left_quantum_table, **right_quantum_table;
+    int num_leigh_table, **leigh_quantum_table, num_leigh_block, *leigh_block, 
+        old_num_leigh_block=0, *old_leigh_block=nullptr;
     int *merge_quantum_table, index, info;
-    int physics_dim, num_left_block, num_right_block, *left_block, *right_block, *left_dim, *right_dim;
+    int physics_dim, num_left_block=0, num_right_block=0, *left_block=nullptr, *right_block=nullptr, *left_dim, *right_dim;
     int num_block, *left_index, *right_index, *physics_index;
 
-    num_left_table = num_table_[site+0];
-    num_right_table = num_table_[site+1];
+    //num_left_table = num_table_[site+0];
+    //num_right_table = num_table_[site+1];
     left_quantum_table = quantum_table_[site+0];
     right_quantum_table = quantum_table_[site+1];
 
@@ -735,12 +738,18 @@ void RealTensorSpace::ReorderQuantumTable(int num_quantum, int num_table, int** 
 void RealTensorSpace::MergeQuantumTable(int *merge_quantum_table, int *operator_quantum_table,
         int *space_quantum_table)
 {
+    (void)merge_quantum_table;
+    (void)operator_quantum_table;
+    (void)space_quantum_table;
     cout << "Base class can not merge QuantumTable" << endl;
     exit(-1);
 }
 
 int RealTensorSpace::CheckQuantumTable(int site, int* left_table, int* right_table)
 {
+    (void)site;
+    (void)left_table;
+    (void)right_table;
     cout << "Base class can not check QuantumTable" << endl;
     exit(-1);
 }

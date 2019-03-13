@@ -405,7 +405,7 @@ RealMatrix* RealMatrix::TransposeMatrix()
 
 RealMatrix* RealMatrix::ReshapeMatrix(int row, int column)
 {
-    RealMatrix* tmp_matrix;
+    RealMatrix* tmp_matrix=nullptr;
     if(row*column != row_*column_)
     {
         cout << "Reshape dimension is not match in ReshapeMatrix" << endl;

@@ -1,16 +1,16 @@
 input
 {
-    num_site_x = 5
+    num_site_x = 12
     num_site_y = 2
-    Nup = 4
-    Ndown = 4
-    physics_dim = 2
+    Nup = 3
+    Ndown = 3
+    physics_dim = 3
     flux = 0.2
     Jx = -1.0
     Jy = -1.0
-    U_uu = 0
-    U_dd = 0
-    U_ud = 0
+    U_uu = 1
+    U_dd = 1
+    U_ud = 1
     mu = 0.0
     period_x = false
     period_y = false
@@ -22,7 +22,7 @@ input
     cache_resume = false
     resume_name = 
     record_process = false
-    process_name = bose_hubbard
+    process_name = test
     
     first_block = 20
     first_dim = 5

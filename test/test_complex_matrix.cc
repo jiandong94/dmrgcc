@@ -173,7 +173,8 @@ int main()
     matrix->ExpanMatrix(1,matrix);
     matrix->PrintMatrix();
 
-    delete matrix_transpose, matrix_reshape;
+    delete matrix_transpose;
+    delete matrix_reshape;
 
 
     cout << endl;
@@ -196,7 +197,8 @@ int main()
     cout << endl;
 
     
-    delete left_matrix, right_matrix;
+    delete left_matrix;
+    delete right_matrix;
     delete[] sigular_value;
     delete matrix;
 
@@ -223,7 +225,8 @@ int main()
                 //cout << Norm(matrix_test->get_matrix_element(i,j) - matrix_test_new->get_matrix_element(i,j)) << endl;
         }
 
-    delete left_matrix, right_matrix;
+    delete left_matrix;
+    delete right_matrix;
     delete[] sigular_value;
     delete matrix;
     

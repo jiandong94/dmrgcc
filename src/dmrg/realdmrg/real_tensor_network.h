@@ -14,7 +14,7 @@ class RealTensorNetwork
     RealTensorHamiltonian* hamiltonian_;
 
     bool disk_cache_;
-    char cache_name_[512];
+    char cache_name_[1024];
 
     int num_site_;
     int num_site_pp_;

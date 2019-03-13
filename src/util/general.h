@@ -13,6 +13,7 @@
 #include "tensor/complex.h"
 #include "mkl.h"
 #include "sys/time.h"
+#include"omp.h"
 
 #define min(a,b) ((a)>(b)?(b):(a))
 #define max(a,b) ((a)<(b)?(b):(a))
@@ -197,21 +198,20 @@ inline void isParallelElement(Complex* element, int position, int& info, Complex
 
 inline void MkdirCacheFolder(bool disk_cache, char* cache_name)
 {
-    char label[512];
-    int dummy;
+    char label[2048];
 
     if(disk_cache == true)
     {
         if(cache_name[0] != '.')
         {
             sprintf(label, "mkdir %s", cache_name);
-            dummy = system(label);
+            system(label);
         }
 
         sprintf(label, "mkdir %s/SpaceDiskCacheFile", cache_name);
-        dummy = system(label);
+        system(label);
         sprintf(label, "mkdir %s/NetworkDiskCacheFile", cache_name);
-        dummy = system(label);
+        system(label);
     }
 }
 

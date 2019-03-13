@@ -286,6 +286,8 @@ void ComplexMatrix::AddToMatrix(Complex factor,const ComplexMatrix* tmp_matrix)
 
 void ComplexMatrix::MultiplyToScalar(Complex scalar)
 {
+
+    //#pragma omp parallel for reduction(*:matrix_element_)
     for(int i=0;i<total_element_num_;++i) matrix_element_[i] *= scalar;
 }
 
@@ -416,7 +418,7 @@ ComplexMatrix* ComplexMatrix::HermitianConjugateMatrix()
 
 ComplexMatrix* ComplexMatrix::ReshapeMatrix(int row, int column)
 {
-    ComplexMatrix* tmp_matrix;
+    ComplexMatrix* tmp_matrix=nullptr;
     if(row*column != row_*column_)
     {
         cout << "Reshape dimension is not match in ReshapeMatrix" << endl;
@@ -611,7 +613,7 @@ void ComplexMatrix::SVDMatrix(ComplexMatrix* &left_matrix, ComplexMatrix* &right
     ldu = min(m, n);
     ldvt = n;
     
-    double superb[min(m,n)-1];
+    //double superb[min(m,n)-1];
 
     singular_dim = min(row_, column_);
 

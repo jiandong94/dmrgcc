@@ -361,7 +361,7 @@ void ComplexTensorLattice::DefineTensorLattice(int num_block, int* left_index, i
 void ComplexTensorLattice::CombineTensorLattice(int leigh, int &num_leigh_block, int* &leigh_block, 
      int* &leigh_dim, ComplexTensorLattice* expan_tensor_lattice)
 {
-    int tmp_num_leigh_block[2], *tmp_leigh_block[2], *tmp_leigh_dim[2];
+    int tmp_num_leigh_block[2]={ 0 }, *tmp_leigh_block[2]={ nullptr }, *tmp_leigh_dim[2]={ nullptr };
     bool flag;
     if(leigh == 0)
     {

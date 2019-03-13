@@ -70,7 +70,7 @@ void RealSpinlessBoseSquareSpace::MergeQuantumTable(int* merge_quantum_table, in
 int RealSpinlessBoseSquareSpace::CheckQuantumTable(int site, int* left_table, int* right_table)
 {
     int info = -1;
-
+    (void)site;
     for(int i=0;i<physics_dim_;++i)
     {
         if(left_table[0]+i == right_table[0])

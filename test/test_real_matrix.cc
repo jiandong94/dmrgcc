@@ -158,7 +158,8 @@ int main()
     matrix->ExpanMatrix(1,matrix);
     matrix->PrintMatrix();
 
-    delete matrix_transpose, matrix_reshape;
+    delete matrix_transpose;
+    delete matrix_reshape;
 
 
     cout << endl;
@@ -180,7 +181,8 @@ int main()
         cout << sigular_value[i] << " ";
     cout << endl;
     
-    delete left_matrix, right_matrix;
+    delete left_matrix;
+    delete right_matrix;
     delete[] sigular_value;
     delete matrix;
     
